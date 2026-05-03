@@ -1,0 +1,19 @@
+{
+  "name": "JCL Inventory and Cashier",
+  "short_name": "JCL Cashier",
+  "description": "Inventory and cashier app for school store transactions.",
+  "start_url": "/cashier/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff8fc",
+  "theme_color": "#941c53",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
