@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | JCL{% endblock %}
+
+{% block content %}
+<section class="hero-panel mb-4">
+    <div class="hero-orb"></div>
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-7">
+            <h1 class="display-6 mb-3">Control stock. Move fast.</h1>
+            <p class="mb-4 text-white-50">Live totals. Quick alerts.</p>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'item_create' %}" class="btn btn-light">Add Item</a>
+                <a href="{% url 'cashier' %}" class="btn btn-ghost">Open Cart</a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="quick-stat">
+                        <div class="eyebrow">Items</div>
+                        <div class="value">{{ total_items }}</div>
+                        <div class="text-muted small">catalog entries</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="quick-stat">
+                        <div class="eyebrow">Stock Units</div>
+                        <div class="value">{{ total_stock }}</div>
+                        <div class="text-muted small">available on hand</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="quick-stat">
+                        <div class="eyebrow">Transactions</div>
+                        <div class="value">{{ transaction_count }}</div>
+                        <div class="text-muted small">completed sales</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="quick-stat">
+                        <div class="eyebrow">Total Sales</div>
+                        <div class="value">Php {{ total_sales }}</div>
+                        <div class="text-muted small">recorded revenue</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <div class="panel-title">
+                    <div>
+                        <span class="section-label mb-2">Alerts</span>
+                        <h2 class="h4 mb-1">Low Stock</h2>
+                        <p class="text-muted mb-0">Below 5 units.</p>
+                    </div>
+                    <span class="metric-chip">{{ low_stock_count }} flagged</span>
+                </div>
+                {% if low_stock_items %}
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Stock</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in low_stock_items %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold">{{ item.name }}</div>
+                                            <div class="small text-muted">Needs replenishment soon</div>
+                                        </td>
+                                        <td><span class="status-pill low">{{ item.quantity }} left</span></td>
+                                        <td class="text-end">
+                                            <a href="{% url 'item_update' item.pk %}" class="btn btn-sm btn-outline-primary">Restock</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">All items are at healthy stock levels.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <div class="panel-title">
+                    <div>
+                        <span class="section-label mb-2">Cash Flow</span>
+                        <h2 class="h4 mb-1">Recent Sales</h2>
+                        <p class="text-muted mb-0">Latest receipts.</p>
+                    </div>
+                </div>
+                {% if recent_transactions %}
+                    <div class="list-group list-group-flush">
+                        {% for txn in recent_transactions %}
+                            <a href="{% url 'receipt' txn.pk %}" class="list-group-item list-group-item-action px-0 py-3">
+                                <div class="d-flex justify-content-between align-items-center gap-3">
+                                    <div>
+                                        <div class="fw-semibold">Transaction #{{ txn.pk }}</div>
+                                        <small class="text-muted">{{ txn.date|date:"M d, Y h:i A" }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-semibold">Php {{ txn.total_amount }}</div>
+                                        <small class="text-muted mono">{{ txn.transaction_items.count }} line(s)</small>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No transactions yet. Start a sale from the cashier page.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

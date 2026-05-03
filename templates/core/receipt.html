@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Receipt #{{ transaction.id }} | JCL{% endblock %}
+
+{% block content %}
+<div class="receipt-paper">
+    <div class="receipt-header mb-4">
+        <div>
+            <div class="receipt-kicker">Official Receipt</div>
+            <h1 class="receipt-title">JCL Inventory and Cashier</h1>
+            <p class="text-muted mb-0">Campus Sales and Stock Management</p>
+        </div>
+        <div class="text-md-end">
+            <div class="receipt-kicker">Receipt No.</div>
+            <div class="fw-semibold mono">{{ transaction.id|stringformat:"06d" }}</div>
+            <div class="text-muted">{{ transaction.date|date:"M d, Y h:i A" }}</div>
+        </div>
+    </div>
+
+    <div class="receipt-meta mb-4">
+        <div class="receipt-meta-item">
+            <div class="receipt-meta-label">Transaction</div>
+            <div class="receipt-meta-value mono">#{{ transaction.id }}</div>
+        </div>
+        <div class="receipt-meta-item">
+            <div class="receipt-meta-label">Date</div>
+            <div class="receipt-meta-value">{{ transaction.date|date:"M d, Y" }}</div>
+        </div>
+        <div class="receipt-meta-item">
+            <div class="receipt-meta-label">Time</div>
+            <div class="receipt-meta-value">{{ transaction.date|date:"h:i A" }}</div>
+        </div>
+        <div class="receipt-meta-item">
+            <div class="receipt-meta-label">Status</div>
+            <div class="receipt-meta-value">Paid</div>
+        </div>
+    </div>
+
+    <div class="receipt-rule"></div>
+
+    <div class="table-responsive mb-4">
+        <table class="table receipt-table align-middle">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th class="text-end">Quantity</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-end">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for line in transaction.transaction_items.all %}
+                    <tr>
+                        <td>{{ line.display_item_name }}</td>
+                        <td class="text-end">{{ line.quantity }}</td>
+                        <td class="text-end">Php {{ line.display_item_price }}</td>
+                        <td class="text-end">Php {{ line.subtotal }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="receipt-summary mb-4">
+        <div class="receipt-total-row">
+            <span class="text-muted">Served by</span>
+            <span class="fw-semibold">JCL Cashier</span>
+        </div>
+        <div class="receipt-total-row">
+            <span class="text-muted">Status</span>
+            <span class="fw-semibold">Paid</span>
+        </div>
+        <div class="receipt-total-row grand-total">
+            <span>Total</span>
+            <span>Php {{ transaction.total_amount }}</span>
+        </div>
+    </div>
+
+    <div class="receipt-rule"></div>
+
+    <p class="text-muted mb-4">Thank you for your purchase. Please keep this receipt for reference.</p>
+
+    <div class="d-flex gap-2 no-print">
+        <a href="{% url 'cashier' %}" class="btn btn-outline-primary">Back</a>
+        <button type="button" class="btn btn-primary" onclick="window.print()">
+            <i class="bi bi-printer me-2"></i>Print Receipt
+        </button>
+    </div>
+</div>
+{% endblock %}

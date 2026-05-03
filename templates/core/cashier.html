@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% load core_extras %}
+
+{% block title %}Cashier | JCL{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cashier-cart {
+        top: 1rem;
+    }
+    .product-action-row {
+        min-height: 2.9rem;
+    }
+    @media (max-width: 767.98px) {
+        .cashier-layout {
+            flex-direction: column-reverse;
+        }
+        .cashier-cart {
+            position: static !important;
+        }
+        .cashier-search .form-label {
+            margin-bottom: 0.4rem;
+        }
+        .product-tile h3 {
+            font-size: 1rem;
+            overflow-wrap: anywhere;
+        }
+        .product-tile .status-pill {
+            flex: 0 0 auto;
+        }
+        .product-action-row {
+            display: grid !important;
+            grid-template-columns: 1fr auto;
+        }
+        .cart-table thead {
+            display: none;
+        }
+        .cart-table tbody,
+        .cart-table tr,
+        .cart-table td {
+            display: block;
+            width: 100%;
+        }
+        .cart-table tr {
+            padding: 0.85rem 0;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        }
+        .cart-table td {
+            border: 0;
+            padding: 0.3rem 0;
+        }
+        .cart-table td[data-label]::before {
+            content: attr(data-label);
+            display: block;
+            margin-bottom: 0.2rem;
+            color: var(--muted);
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .cart-table .input-group {
+            max-width: 100%;
+        }
+        .cart-table tfoot th {
+            display: block;
+            width: 100%;
+            padding-left: 0;
+            padding-right: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero-panel mb-4">
+    <div class="hero-orb"></div>
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-8">
+            <span class="section-label mb-3">Cashier Desk</span>
+            <h1 class="display-6 mb-2">Fast cart. Clean flow.</h1>
+            <p class="text-white-50 mb-0">Add. Cancel. Checkout.</p>
+        </div>
+        <div class="col-lg-4">
+            <div class="quick-stat">
+                <div class="eyebrow">Live Cart Total</div>
+                <div class="value">Php {{ cart.total }}</div>
+                <div class="text-muted small">{{ cart.total_quantity }} item(s) prepared for checkout</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="row g-4 cashier-layout">
+    <div class="col-lg-7">
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <form method="get" class="row g-3 align-items-end cashier-search">
+                    <div class="col-md-9">
+                        <label class="form-label fw-semibold">Search</label>
+                        {{ search_form.q }}
+                    </div>
+                    <div class="col-md-3 d-grid">
+                        <button type="submit" class="btn btn-outline-primary">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="panel-title">
+                    <div>
+                        <span class="section-label mb-2">Items</span>
+                        <h2 class="h4 mb-1">Pick Items</h2>
+                        <p class="text-muted mb-0">Quick add or cancel.</p>
+                    </div>
+                </div>
+                <form method="post" action="{% url 'add_multiple_to_cart' %}">
+                    {% csrf_token %}
+                    <div class="futuristic-grid">
+                        {% for item in items %}
+                            <div class="card card-soft product-tile h-100">
+                                <div class="card-body p-4 d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                                        <div>
+                                            <h3 class="h5 mb-1">{{ item.name }}</h3>
+                                            {% if item.description %}
+                                                <div class="mini-note">{{ item.description|truncatechars:32 }}</div>
+                                            {% endif %}
+                                        </div>
+                                        {% if item.is_low_stock %}
+                                            <span class="status-pill low">{{ item.quantity }} left</span>
+                                        {% else %}
+                                            <span class="status-pill good">{{ item.quantity }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="fw-semibold">Php {{ item.price }}</div>
+                                        <div class="metric-chip mono">ID {{ item.id }}</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label mini-note mb-2">Qty</label>
+                                        <input
+                                            type="number"
+                                            name="qty_{{ item.id }}"
+                                            min="0"
+                                            max="{{ item.quantity }}"
+                                            value="0"
+                                            class="form-control"
+                                        >
+                                    </div>
+                                    <div class="mt-auto d-flex gap-2 product-action-row">
+                                        <button type="submit" class="btn btn-primary flex-grow-1">Add</button>
+                                        {% if item.id in cart_item_ids %}
+                                            <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-outline-danger">Cancel</a>
+                                        {% else %}
+                                            <button type="button" class="btn btn-outline-secondary" disabled>Cancel</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="card">
+                                <div class="card-body text-muted text-center py-5">No items found.</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card sticky-top cashier-cart">
+            <div class="card-body p-4">
+                <div class="panel-title">
+                    <div>
+                        <span class="section-label mb-2">Checkout</span>
+                        <h2 class="h4 mb-1">Cart</h2>
+                        <p class="text-muted mb-0">Edit before checkout.</p>
+                    </div>
+                    <span class="metric-chip mono">{{ cart.total_quantity }} item(s)</span>
+                </div>
+                {% if cart.lines %}
+                    <div class="table-responsive">
+                        <table class="table align-middle cart-table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Subtotal</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for line in cart.lines %}
+                                    <tr>
+                                        <td data-label="Item">
+                                            <div class="fw-semibold">{{ line.item.name }}</div>
+                                            <small class="text-muted">Php {{ line.price }} each</small>
+                                        </td>
+                                        <td data-label="Qty" style="min-width: 140px;">
+                                            <form method="post" action="{% url 'update_cart' line.item.id %}">
+                                                {% csrf_token %}
+                                                <div class="input-group input-group-sm">
+                                                    {{ line.update_form.quantity }}
+                                                    <button class="btn btn-outline-primary" type="submit">Update</button>
+                                                </div>
+                                            </form>
+                                        </td>
+                                        <td data-label="Subtotal" class="fw-semibold">Php {{ line.subtotal }}</td>
+                                        <td class="text-end">
+                                            <a href="{% url 'remove_from_cart' line.item.id %}" class="btn btn-sm btn-outline-danger">Remove</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="2">Total</th>
+                                    <th colspan="2" class="fw-bold">Php {{ cart.total }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <form method="post" action="{% url 'checkout' %}" class="d-grid">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg">Checkout</button>
+                    </form>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        Cart is empty. Add items to begin a transaction.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

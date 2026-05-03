@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory | JCL{% endblock %}
+
+{% block content %}
+<section class="hero-panel mb-4">
+    <div class="hero-orb"></div>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <span class="section-label mb-3">Inventory Control</span>
+            <h1 class="display-6 mb-2">Inventory</h1>
+            <p class="text-white-50 mb-0">Search. Edit. Track.</p>
+        </div>
+        <a href="{% url 'item_create' %}" class="btn btn-light">Add Item</a>
+    </div>
+</section>
+
+<div class="card mb-4">
+    <div class="card-body p-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-10">
+                <label class="form-label fw-semibold">Search</label>
+                {{ search_form.q }}
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-primary">Find</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-4">
+        <div class="panel-title">
+            <div>
+                <span class="section-label mb-2">Inventory Table</span>
+                <h2 class="h4 mb-1">Items</h2>
+                <p class="text-muted mb-0">Stock list.</p>
+            </div>
+            <span class="metric-chip mono">{{ items|length }} record{{ items|length|pluralize }}</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Date Added</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ item.name }}</div>
+                                {% if item.is_low_stock %}
+                                    <span class="status-pill low mt-2">Low stock</span>
+                                {% else %}
+                                    <span class="status-pill good mt-2">Ready</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.description|default:"-"|truncatechars:60 }}</td>
+                            <td class="fw-semibold">Php {{ item.price }}</td>
+                            <td><span class="mono">{{ item.quantity }}</span></td>
+                            <td class="text-muted">{{ item.date_added|date:"M d, Y h:i A" }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'item_update' item.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a href="{% url 'item_delete' item.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No items found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
