@@ -395,6 +395,25 @@ def deny_user_view(request, user_id):
 
 
 @login_required
+@user_passes_test(_is_admin_user)
+def user_delete_view(request, user_id):
+    """Allow admins to delete another user account."""
+    user = get_object_or_404(get_user_model(), pk=user_id)
+
+    if user.pk == request.user.pk:
+        messages.error(request, "You cannot delete your own admin account while signed in.")
+        return redirect("user_management")
+
+    if request.method == "POST":
+        username = user.username
+        user.delete()
+        messages.success(request, f"{username} was removed successfully.")
+        return redirect("user_management")
+
+    return render(request, "core/user_confirm_delete.html", {"target_user": user})
+
+
+@login_required
 def settings_view(request):
     """Let each signed-in user choose the website theme for their session."""
     if request.method == "POST":

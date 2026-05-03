@@ -21,6 +21,7 @@ urlpatterns = [
     path("users/<int:user_id>/branch/", views.set_user_branch_view, name="set_user_branch"),
     path("users/<int:user_id>/approve/", views.approve_user_view, name="approve_user"),
     path("users/<int:user_id>/deny/", views.deny_user_view, name="deny_user"),
+    path("users/<int:user_id>/delete/", views.user_delete_view, name="user_delete"),
     path("inventory/", views.inventory_list_view, name="inventory_list"),
     path("inventory/add/", views.item_create_view, name="item_create"),
     path("inventory/<int:pk>/edit/", views.item_update_view, name="item_update"),
