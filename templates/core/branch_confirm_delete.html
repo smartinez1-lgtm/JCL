@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Branch | JCL{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-body p-4">
+                <span class="section-label mb-3">Danger Zone</span>
+                <h1 class="h4 mb-3">Delete Branch</h1>
+                <p class="text-muted">
+                    Are you sure you want to delete <strong>{{ branch.name }}</strong>?
+                    This action cannot be undone from the interface.
+                </p>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <div class="quick-stat">
+                            <div class="eyebrow">Items</div>
+                            <div class="value">{{ item_count }}</div>
+                            <div class="text-muted small">assigned records</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="quick-stat">
+                            <div class="eyebrow">Transactions</div>
+                            <div class="value">{{ transaction_count }}</div>
+                            <div class="text-muted small">sales history</div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if not can_delete %}
+                    <div class="alert alert-warning">
+                        This branch cannot be deleted while it still has items or transactions.
+                        Move or remove those records first.
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between gap-2 flex-wrap">
+                        <a href="{% url 'branch_detail' branch.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-danger" {% if not can_delete %}disabled{% endif %}>
+                            Delete Branch
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

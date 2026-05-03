@@ -3,22 +3,42 @@ import os
 from decimal import Decimal
 
 from django.contrib import messages
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import IntegrityError
 from django.db import transaction
 from django.db.models import Count, DecimalField, IntegerField, OuterRef, Q, Subquery, Sum, Value
+from django.db.models.deletion import ProtectedError
 from django.db.models.functions import Coalesce
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import AdminSetupForm, CartAddForm, CartUpdateForm, ItemForm, SearchForm, SignUpForm, ThemeSettingsForm
-from .models import Branch, Item, Transaction, TransactionItem
+from .forms import (
+    AdminSetupForm,
+    AdminUserCreationForm,
+    BranchForm,
+    CartAddForm,
+    CartUpdateForm,
+    ItemForm,
+    SearchForm,
+    SignUpForm,
+    ThemeSettingsForm,
+    UserBranchAssignmentForm,
+)
+from .models import Branch, Item, Transaction, TransactionItem, UserBranchAssignment
 
 
 def _is_admin_user(user):
     """Allow only staff/admin users into management-only pages."""
     return user.is_authenticated and user.is_staff
+
+
+def _admin_cashier_redirect(request):
+    """Keep staff/admin users out of cashier-only cart screens."""
+    if request.user.is_staff:
+        messages.info(request, "Cart access is for user accounts only.")
+        return redirect("dashboard")
+    return None
 
 
 def _get_cart(session):
@@ -29,7 +49,7 @@ def _get_cart(session):
 
 
 def signup_view(request):
-    """Create a user account and sign the user in immediately."""
+    """Create an inactive user account that waits for admin approval."""
     if request.user.is_authenticated:
         return redirect("dashboard")
 
@@ -41,9 +61,11 @@ def signup_view(request):
             except IntegrityError:
                 form.add_error("username", "That username is already taken. Please choose another one.")
             else:
-                login(request, user)
-                messages.success(request, "Account created successfully. You are now signed in.")
-                return redirect("dashboard")
+                user.is_active = False
+                user.is_staff = False
+                user.save()
+                messages.success(request, "Account request sent. An admin must approve it before you can log in.")
+                return redirect("login")
     else:
         form = SignUpForm()
 
@@ -162,6 +184,7 @@ def dashboard_view(request):
         "low_stock_count": low_stock_count,
         "transaction_count": transaction_count,
         "total_sales": total_sales,
+        "pending_users": get_user_model().objects.filter(is_active=False, is_staff=False).order_by("date_joined"),
         "recent_transactions": Transaction.objects.select_related("branch").prefetch_related(
             "transaction_items",
             "transaction_items__item",
@@ -169,6 +192,206 @@ def dashboard_view(request):
         "low_stock_items": items.filter(quantity__lt=5)[:5],
     }
     return render(request, "core/dashboard.html", context)
+
+
+@login_required
+@user_passes_test(_is_admin_user)
+def branch_list_view(request):
+    """Allow admins to review all branches."""
+    branches = Branch.objects.annotate(
+        item_count=Count("items", distinct=True),
+        low_stock_count=Count("items", filter=Q(items__quantity__gt=0, items__quantity__lt=5), distinct=True),
+        missing_count=Count("items", filter=Q(items__quantity=0), distinct=True),
+        transaction_count=Count("transactions", distinct=True),
+    )
+    return render(request, "core/branch_list.html", {"branches": branches})
+
+
+@login_required
+@user_passes_test(_is_admin_user)
+def branch_detail_view(request, pk):
+    """Show the items and stock needs for one branch."""
+    branch = get_object_or_404(Branch, pk=pk)
+    items = branch.items.all()
+    transaction_count = branch.transactions.count()
+    total_sales = branch.transactions.aggregate(total=Sum("total_amount"))["total"] or Decimal("0.00")
+    units_sold = (
+        TransactionItem.objects.filter(transaction__branch=branch).aggregate(total=Sum("quantity"))["total"] or 0
+    )
+    total_stock = items.aggregate(total=Sum("quantity"))["total"] or 0
+
+    context = {
+        "branch": branch,
+        "items": items,
+        "assigned_users": branch.user_assignments.select_related("user").all(),
+        "total_stock": total_stock,
+        "transaction_count": transaction_count,
+        "total_sales": total_sales,
+        "units_sold": units_sold,
+        "missing_items": items.filter(quantity=0),
+        "low_stock_items": items.filter(quantity__gt=0, quantity__lt=5),
+        "recent_transactions": branch.transactions.prefetch_related("transaction_items")[:8],
+    }
+    return render(request, "core/branch_detail.html", context)
+
+
+@login_required
+@user_passes_test(_is_admin_user)
+def branch_create_view(request):
+    """Allow admins to create a new branch."""
+    if request.method == "POST":
+        form = BranchForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Branch added successfully.")
+            return redirect("branch_list")
+    else:
+        form = BranchForm()
+
+    return render(
+        request,
+        "core/branch_form.html",
+        {"form": form, "page_title": "Add Branch", "button_label": "Save Branch"},
+    )
+
+
+@login_required
+@user_passes_test(_is_admin_user)
+def branch_update_view(request, pk):
+    """Allow admins to update branch details and active status."""
+    branch = get_object_or_404(Branch, pk=pk)
+
+    if request.method == "POST":
+        form = BranchForm(request.POST, instance=branch)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Branch updated successfully.")
+            return redirect("branch_list")
+    else:
+        form = BranchForm(instance=branch)
+
+    return render(
+        request,
+        "core/branch_form.html",
+        {
+            "form": form,
+            "page_title": f"Edit {branch.name}",
+            "button_label": "Update Branch",
+            "branch": branch,
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_admin_user)
+def branch_delete_view(request, pk):
+    """Confirm and delete a branch when it has no protected records."""
+    branch = get_object_or_404(Branch, pk=pk)
+    item_count = branch.items.count()
+    transaction_count = branch.transactions.count()
+
+    if request.method == "POST":
+        try:
+            branch.delete()
+        except ProtectedError:
+            messages.error(
+                request,
+                "Branch cannot be deleted while it still has items or transactions. Move or remove those records first.",
+            )
+            return redirect("branch_detail", pk=branch.pk)
+
+        messages.success(request, "Branch deleted successfully.")
+        return redirect("branch_list")
+
+    return render(
+        request,
+        "core/branch_confirm_delete.html",
+        {
+            "branch": branch,
+            "item_count": item_count,
+            "transaction_count": transaction_count,
+            "can_delete": item_count == 0 and transaction_count == 0,
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_admin_user)
+def user_management_view(request):
+    """Allow admins to add users and approve or deny pending signup requests."""
+    user_model = get_user_model()
+
+    if request.method == "POST":
+        form = AdminUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "User added successfully.")
+            return redirect("user_management")
+    else:
+        form = AdminUserCreationForm()
+
+    context = {
+        "form": form,
+        "pending_users": user_model.objects.filter(is_active=False, is_staff=False).order_by("date_joined"),
+        "active_users": user_model.objects.filter(is_active=True).select_related("branch_assignment__branch").order_by(
+            "username"
+        ),
+        "branch_assignment_form": UserBranchAssignmentForm(),
+    }
+    return render(request, "core/user_management.html", context)
+
+
+@login_required
+@user_passes_test(_is_admin_user)
+def set_user_branch_view(request, user_id):
+    """Assign an existing user to a branch."""
+    if request.method != "POST":
+        return redirect("user_management")
+
+    user = get_object_or_404(get_user_model(), pk=user_id, is_active=True, is_staff=False)
+    form = UserBranchAssignmentForm(request.POST)
+
+    if form.is_valid():
+        branch = form.cleaned_data["branch"]
+        if branch:
+            UserBranchAssignment.objects.update_or_create(user=user, defaults={"branch": branch})
+            messages.success(request, f"{user.username} was assigned to {branch.name}.")
+        else:
+            UserBranchAssignment.objects.filter(user=user).delete()
+            messages.success(request, f"{user.username}'s branch assignment was removed.")
+    else:
+        messages.error(request, "Choose a valid branch.")
+
+    return redirect("user_management")
+
+
+@login_required
+@user_passes_test(_is_admin_user)
+def approve_user_view(request, user_id):
+    """Activate a pending user account."""
+    if request.method != "POST":
+        return redirect("user_management")
+
+    user = get_object_or_404(get_user_model(), pk=user_id, is_active=False, is_staff=False)
+    user.is_active = True
+    user.is_staff = False
+    user.save()
+    messages.success(request, f"{user.username} has been approved.")
+    return redirect("user_management")
+
+
+@login_required
+@user_passes_test(_is_admin_user)
+def deny_user_view(request, user_id):
+    """Remove a pending signup request."""
+    if request.method != "POST":
+        return redirect("user_management")
+
+    user = get_object_or_404(get_user_model(), pk=user_id, is_active=False, is_staff=False)
+    username = user.username
+    user.delete()
+    messages.success(request, f"{username}'s account request was denied.")
+    return redirect("user_management")
 
 
 @login_required
@@ -271,6 +494,10 @@ def item_delete_view(request, pk):
 @login_required
 def cashier_view(request):
     """Show sellable items together with the current cart."""
+    admin_redirect = _admin_cashier_redirect(request)
+    if admin_redirect:
+        return admin_redirect
+
     search_form = SearchForm(request.GET)
     items = Item.objects.select_related("branch").filter(quantity__gt=0, branch__is_active=True)
 
@@ -296,6 +523,10 @@ def cashier_view(request):
 @login_required
 def add_to_cart_view(request, item_id):
     """Add an item to the session cart while respecting available stock."""
+    admin_redirect = _admin_cashier_redirect(request)
+    if admin_redirect:
+        return admin_redirect
+
     item = get_object_or_404(Item, pk=item_id)
 
     if request.method != "POST":
@@ -328,6 +559,10 @@ def add_to_cart_view(request, item_id):
 @login_required
 def add_multiple_to_cart_view(request):
     """Add several items to the cart from a single cashier form submit."""
+    admin_redirect = _admin_cashier_redirect(request)
+    if admin_redirect:
+        return admin_redirect
+
     if request.method != "POST":
         return redirect("cashier")
 
@@ -383,6 +618,10 @@ def add_multiple_to_cart_view(request):
 @login_required
 def update_cart_view(request, item_id):
     """Update quantity of a cart line while checking remaining stock."""
+    admin_redirect = _admin_cashier_redirect(request)
+    if admin_redirect:
+        return admin_redirect
+
     if request.method != "POST":
         return redirect("cashier")
 
@@ -409,6 +648,10 @@ def update_cart_view(request, item_id):
 @login_required
 def remove_from_cart_view(request, item_id):
     """Remove a line item from the cart."""
+    admin_redirect = _admin_cashier_redirect(request)
+    if admin_redirect:
+        return admin_redirect
+
     cart = _get_cart(request.session)
     removed = cart.pop(str(item_id), None)
     request.session.modified = True
@@ -422,6 +665,10 @@ def remove_from_cart_view(request, item_id):
 @login_required
 def checkout_view(request):
     """Turn the current cart into a saved transaction and deduct stock."""
+    admin_redirect = _admin_cashier_redirect(request)
+    if admin_redirect:
+        return admin_redirect
+
     if request.method != "POST":
         return redirect("cashier")
 

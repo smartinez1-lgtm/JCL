@@ -118,6 +118,10 @@
                 radial-gradient(circle at 86% 12%, rgba(88, 184, 239, 0.08), transparent 20%),
                 linear-gradient(180deg, #11151d 0%, #171b24 100%);
         }
+        body.admin-user a[href="/cashier/"],
+        body.admin-user .topbar .metric-chip-light {
+            display: none !important;
+        }
         body::before {
             content: "";
             position: fixed;
@@ -459,6 +463,13 @@
             font-size: 0.82rem;
             font-weight: 700;
         }
+        .action-group {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
         .metric-chip-light {
             background: rgba(255, 255, 255, 0.14);
             color: #fff;
@@ -643,7 +654,7 @@
             }
             .navbar-nav {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(3.2rem, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(3.6rem, 1fr));
                 gap: 0.55rem;
                 width: 100%;
             }
@@ -663,6 +674,16 @@
                 max-width: 100%;
                 justify-content: center;
                 flex-wrap: wrap;
+            }
+            .topbar .d-flex.flex-column.flex-lg-row {
+                align-items: stretch !important;
+                width: 100%;
+            }
+            .topbar .user-chip + .small {
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
             .card,
             .glass-panel {
@@ -688,6 +709,14 @@
                 flex-direction: column;
                 gap: 0.75rem;
             }
+            .panel-title > * {
+                width: 100%;
+            }
+            .panel-title .btn,
+            .panel-title .metric-chip {
+                width: 100%;
+                justify-content: center;
+            }
             .futuristic-grid {
                 grid-template-columns: 1fr;
             }
@@ -699,11 +728,49 @@
             .receipt-paper {
                 padding: 1.25rem;
             }
+            .table-responsive {
+                margin-left: -0.25rem;
+                margin-right: -0.25rem;
+                width: calc(100% + 0.5rem);
+            }
+            .table > :not(caption) > * > * {
+                padding: 0.85rem 0.65rem;
+            }
+            .table td,
+            .table th {
+                white-space: nowrap;
+            }
+            .table td:first-child,
+            .table th:first-child {
+                white-space: normal;
+                min-width: 11rem;
+            }
+            .table .small,
+            .table .text-muted {
+                white-space: normal;
+            }
+            .action-group,
+            .table .text-end {
+                min-width: 8.5rem;
+                text-align: left !important;
+            }
+            .action-group .btn,
+            .table .text-end .btn {
+                margin-top: 0.25rem;
+            }
+            .hero-panel .d-flex.gap-2,
+            .hero-panel .d-flex.flex-wrap {
+                width: 100%;
+            }
+            .hero-panel .btn {
+                flex: 1 1 100%;
+                text-align: center;
+            }
         }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
-<body data-theme="{{ active_theme|default:'pink' }}">
+<body data-theme="{{ active_theme|default:'pink' }}" class="{% if request.user.is_staff %}admin-user{% endif %}">
     <div class="container app-shell navbar-wrap">
         {% include "includes/navbar.html" %}
     </div>

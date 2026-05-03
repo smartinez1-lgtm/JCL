@@ -8,7 +8,7 @@
         <div class="card">
             <div class="card-body p-4">
                 <h1 class="h3 mb-3 text-center">Create Account</h1>
-                <p class="text-muted text-center">Register a user account to access the dashboard, inventory, and cashier pages.</p>
+                <p class="text-muted text-center">Request a cashier account. An admin must approve it before login.</p>
                 <form method="post" novalidate>
                     {% csrf_token %}
                     {% if form.non_field_errors %}

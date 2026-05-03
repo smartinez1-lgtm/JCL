@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}{{ branch.name }} | JCL{% endblock %}
+
+{% block content %}
+<section class="hero-panel mb-4">
+    <div class="hero-orb"></div>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <span class="section-label mb-3">Branch Information</span>
+            <h1 class="display-6 mb-2">{{ branch.name }}</h1>
+            <p class="text-white-50 mb-0">{{ branch.address|default:"No address set" }}</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'item_create' %}" class="btn btn-light">Add Item</a>
+            <a href="{% url 'branch_update' branch.pk %}" class="btn btn-ghost">Edit Branch</a>
+            <a href="{% url 'branch_delete' branch.pk %}" class="btn btn-ghost">Delete Branch</a>
+            <a href="{% url 'branch_list' %}" class="btn btn-ghost">All Branches</a>
+        </div>
+    </div>
+</section>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="quick-stat">
+            <div class="eyebrow">Items</div>
+            <div class="value">{{ items.count }}</div>
+            <div class="text-muted small">listed in this branch</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="quick-stat">
+            <div class="eyebrow">Stock Units</div>
+            <div class="value">{{ total_stock }}</div>
+            <div class="text-muted small">available on hand</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="quick-stat">
+            <div class="eyebrow">Low Stock</div>
+            <div class="value">{{ low_stock_items.count }}</div>
+            <div class="text-muted small">below 5 units</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="quick-stat">
+            <div class="eyebrow">Missing</div>
+            <div class="value">{{ missing_items.count }}</div>
+            <div class="text-muted small">zero stock</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <span class="section-label mb-2">Details</span>
+                <h2 class="h4 mb-3">Branch Profile</h2>
+                <div class="receipt-meta">
+                    <div class="receipt-meta-item">
+                        <div class="receipt-meta-label">Name</div>
+                        <div class="receipt-meta-value">{{ branch.name }}</div>
+                    </div>
+                    <div class="receipt-meta-item">
+                        <div class="receipt-meta-label">Status</div>
+                        <div class="receipt-meta-value">
+                            {% if branch.is_active %}
+                                <span class="status-pill good">Active</span>
+                            {% else %}
+                                <span class="status-pill low">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="receipt-meta-item">
+                        <div class="receipt-meta-label">Address</div>
+                        <div class="receipt-meta-value">{{ branch.address|default:"No address set" }}</div>
+                    </div>
+                    <div class="receipt-meta-item">
+                        <div class="receipt-meta-label">Date Added</div>
+                        <div class="receipt-meta-value">{{ branch.date_added|date:"M d, Y h:i A" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <span class="section-label mb-2">Activity</span>
+                <h2 class="h4 mb-3">Branch Sales</h2>
+                <div class="row g-3">
+                    <div class="col-sm-4">
+                        <div class="quick-stat">
+                            <div class="eyebrow">Transactions</div>
+                            <div class="value">{{ transaction_count }}</div>
+                            <div class="text-muted small">completed</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="quick-stat">
+                            <div class="eyebrow">Units Sold</div>
+                            <div class="value">{{ units_sold }}</div>
+                            <div class="text-muted small">sold items</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="quick-stat">
+                            <div class="eyebrow">Total Sales</div>
+                            <div class="value">Php {{ total_sales }}</div>
+                            <div class="text-muted small">revenue</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="list-group list-group-flush mt-3">
+                    {% for txn in recent_transactions %}
+                        <a href="{% url 'receipt' txn.pk %}" class="list-group-item list-group-item-action px-0 py-3">
+                            <div class="d-flex justify-content-between align-items-center gap-3">
+                                <div>
+                                    <div class="fw-semibold">Transaction #{{ txn.pk }}</div>
+                                    <small class="text-muted">{{ txn.date|date:"M d, Y h:i A" }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-semibold">Php {{ txn.total_amount }}</div>
+                                    <small class="text-muted mono">{{ txn.transaction_items.count }} line(s)</small>
+                                </div>
+                            </div>
+                        </a>
+                    {% empty %}
+                        <p class="text-muted mb-0 mt-3">No sales recorded for this branch yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body p-4">
+        <div class="panel-title">
+            <div>
+                <span class="section-label mb-2">Branch Users</span>
+                <h2 class="h4 mb-1">Assigned Users</h2>
+                <p class="text-muted mb-0">Users allowed to use this branch.</p>
+            </div>
+            <a href="{% url 'user_management' %}" class="btn btn-sm btn-outline-primary">Manage Users</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Last Login</th>
+                        <th>Password</th>
+                        <th>Assigned</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assigned_users %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ assignment.user.username }}</div>
+                                <div class="small text-muted">ID {{ assignment.user.pk }}</div>
+                            </td>
+                            <td>{{ assignment.user.email|default:"No email" }}</td>
+                            <td>
+                                {% if assignment.user.is_active %}
+                                    <span class="status-pill good">Active</span>
+                                {% else %}
+                                    <span class="status-pill low">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted">
+                                {% if assignment.user.last_login %}
+                                    {{ assignment.user.last_login|date:"M d, Y h:i A" }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="/admin/auth/user/{{ assignment.user.pk }}/password/" class="btn btn-sm btn-outline-secondary">Change</a>
+                            </td>
+                            <td class="text-muted">{{ assignment.date_assigned|date:"M d, Y" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No users assigned to this branch.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="mini-note mt-3 mb-0">Passwords are protected by Django and cannot be viewed. Admins can change a user's password when needed.</p>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body p-4">
+        <div class="panel-title">
+            <div>
+                <span class="section-label mb-2">Needs Attention</span>
+                <h2 class="h4 mb-1">Missing and Low Stock</h2>
+                <p class="text-muted mb-0">Use this list to know what to add for this branch.</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in missing_items %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ item.name }}</div>
+                                <div class="small text-muted">{{ item.description|default:"No description"|truncatechars:70 }}</div>
+                            </td>
+                            <td class="fw-semibold">Php {{ item.price }}</td>
+                            <td><span class="mono">{{ item.quantity }}</span></td>
+                            <td><span class="status-pill low">Missing</span></td>
+                            <td class="text-end">
+                                <div class="action-group">
+                                    <a href="{% url 'item_update' item.pk %}" class="btn btn-sm btn-outline-primary">Restock</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% for item in low_stock_items %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ item.name }}</div>
+                                <div class="small text-muted">{{ item.description|default:"No description"|truncatechars:70 }}</div>
+                            </td>
+                            <td class="fw-semibold">Php {{ item.price }}</td>
+                            <td><span class="mono">{{ item.quantity }}</span></td>
+                            <td><span class="status-pill low">Low stock</span></td>
+                            <td class="text-end">
+                                <div class="action-group">
+                                    <a href="{% url 'item_update' item.pk %}" class="btn btn-sm btn-outline-primary">Restock</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        {% if not missing_items %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No missing or low-stock items.</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-4">
+        <div class="panel-title">
+            <div>
+                <span class="section-label mb-2">All Items</span>
+                <h2 class="h4 mb-1">Branch Inventory</h2>
+                <p class="text-muted mb-0">Complete stock list for {{ branch.name }}.</p>
+            </div>
+            <span class="metric-chip mono">{{ items.count }} record{{ items.count|pluralize }}</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td class="fw-semibold">{{ item.name }}</td>
+                            <td>{{ item.description|default:"-"|truncatechars:70 }}</td>
+                            <td class="fw-semibold">Php {{ item.price }}</td>
+                            <td><span class="mono">{{ item.quantity }}</span></td>
+                            <td>
+                                {% if item.quantity == 0 %}
+                                    <span class="status-pill low">Missing</span>
+                                {% elif item.is_low_stock %}
+                                    <span class="status-pill low">Low stock</span>
+                                {% else %}
+                                    <span class="status-pill good">Ready</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="action-group">
+                                    <a href="{% url 'item_update' item.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No items assigned to this branch.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

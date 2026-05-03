@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | JCL{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="panel-title">
+                    <div>
+                        <span class="section-label mb-2">Admin Only</span>
+                        <h1 class="h3 mb-1">{{ page_title }}</h1>
+                        <p class="text-muted mb-0">Branch access is controlled by admin users.</p>
+                    </div>
+                    <a href="{% url 'branch_list' %}" class="btn btn-sm btn-outline-secondary">Back</a>
+                </div>
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label class="form-label">Branch Name</label>
+                        {{ form.name }}
+                        <div class="text-danger small">{{ form.name.errors }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        {{ form.address }}
+                        <div class="text-danger small">{{ form.address.errors }}</div>
+                    </div>
+                    <div class="form-check mb-4">
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active branch</label>
+                        <div class="text-danger small">{{ form.is_active.errors }}</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">{{ button_label }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -25,13 +25,27 @@
                             <span class="label">Stock</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link icon-nav" href="{% url 'branch_list' %}" title="Branches" aria-label="Branches">
+                            <i class="bi bi-diagram-3-fill"></i>
+                            <span class="label">Branches</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link icon-nav" href="{% url 'user_management' %}" title="Users" aria-label="Users">
+                            <i class="bi bi-people-fill"></i>
+                            <span class="label">Users</span>
+                        </a>
+                    </li>
                 {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link icon-nav" href="{% url 'cashier' %}" title="Cart" aria-label="Cart">
-                        <i class="bi bi-cart3"></i>
-                        <span class="label">Cart</span>
-                    </a>
-                </li>
+                {% if can_use_cart %}
+                    <li class="nav-item">
+                        <a class="nav-link icon-nav" href="{% url 'cashier' %}" title="Cart" aria-label="Cart">
+                            <i class="bi bi-cart3"></i>
+                            <span class="label">Cart</span>
+                        </a>
+                    </li>
+                {% endif %}
                 {% if request.user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link icon-nav" href="{% url 'settings' %}" title="Settings" aria-label="Settings">
@@ -50,12 +64,14 @@
                 {% endif %}
             </ul>
             <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 text-white">
-                <div class="metric-chip metric-chip-light">
-                    <span class="mono">Cart</span>
-                    <span>{{ cart_items_count }} item(s)</span>
-                    <span class="text-white-50">|</span>
-                    <span>Php {{ cart_total_amount }}</span>
-                </div>
+                {% if can_use_cart %}
+                    <div class="metric-chip metric-chip-light">
+                        <span class="mono">Cart</span>
+                        <span>{{ cart_items_count }} item(s)</span>
+                        <span class="text-white-50">|</span>
+                        <span>Php {{ cart_total_amount }}</span>
+                    </div>
+                {% endif %}
                 {% if request.user.is_authenticated %}
                     <div class="d-flex align-items-center gap-2">
                         <span class="user-chip" title="{{ request.user.username }}" aria-label="{{ request.user.username }}">

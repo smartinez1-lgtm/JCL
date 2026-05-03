@@ -36,6 +36,16 @@ def _require_staff(request):
     return None
 
 
+def _require_cashier_user(request):
+    """Require a non-staff user for cashier/cart API actions."""
+    auth_error = _require_user(request)
+    if auth_error:
+        return auth_error
+    if request.user.is_staff:
+        return _error("Cart access is for user accounts only.", status=403)
+    return None
+
+
 def _read_json(request):
     """Parse a JSON request body into a dictionary."""
     if not request.body:
@@ -218,7 +228,7 @@ def api_transactions(request):
 @require_http_methods(["POST"])
 def api_checkout(request):
     """Create a transaction directly from JSON line items and deduct stock."""
-    auth_error = _require_user(request)
+    auth_error = _require_cashier_user(request)
     if auth_error:
         return auth_error
 

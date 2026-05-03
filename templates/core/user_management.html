@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Users | JCL{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <span class="section-label mb-2">Admin Only</span>
+                <h1 class="h3 mb-3">Add User</h1>
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        {{ form.username }}
+                        <div class="text-danger small">{{ form.username.errors }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        {{ form.email }}
+                        <div class="text-danger small">{{ form.email.errors }}</div>
+                    </div>
+                    <div class="form-check mb-3">
+                        {{ form.is_staff }}
+                        <label class="form-check-label" for="{{ form.is_staff.id_for_label }}">Admin access</label>
+                        <div class="form-text">{{ form.is_staff.help_text }}</div>
+                        <div class="text-danger small">{{ form.is_staff.errors }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Branch</label>
+                        {{ form.branch }}
+                        <div class="form-text">{{ form.branch.help_text }}</div>
+                        <div class="text-danger small">{{ form.branch.errors }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        {{ form.password1 }}
+                        <div class="text-danger small">{{ form.password1.errors }}</div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Confirm Password</label>
+                        {{ form.password2 }}
+                        <div class="text-danger small">{{ form.password2.errors }}</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="panel-title">
+                    <div>
+                        <span class="section-label mb-2">Requests</span>
+                        <h2 class="h4 mb-1">Pending Accounts</h2>
+                        <p class="text-muted mb-0">Approve or deny new signup requests.</p>
+                    </div>
+                    <span class="metric-chip">{{ pending_users.count }} waiting</span>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for pending_user in pending_users %}
+                        <div class="list-group-item px-0 py-3">
+                            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                                <div>
+                                    <div class="fw-semibold">{{ pending_user.username }}</div>
+                                    <small class="text-muted">{{ pending_user.email|default:"No email" }} | {{ pending_user.date_joined|date:"M d, Y h:i A" }}</small>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <form method="post" action="{% url 'approve_user' pending_user.pk %}" class="mb-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-primary">Approve</button>
+                                    </form>
+                                    <form method="post" action="{% url 'deny_user' pending_user.pk %}" class="mb-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Deny</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted mb-0">No pending account requests.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="panel-title">
+                    <div>
+                        <span class="section-label mb-2">System Users</span>
+                        <h2 class="h4 mb-1">Active Accounts</h2>
+                    </div>
+                    <span class="metric-chip">{{ active_users.count }} active</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Role</th>
+                                <th>Branch</th>
+                                <th>Password</th>
+                                <th>Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for active_user in active_users %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ active_user.username }}</div>
+                                        <div class="small text-muted">{{ active_user.email|default:"No email" }}</div>
+                                    </td>
+                                    <td>
+                                        {% if active_user.is_staff %}
+                                            <span class="status-pill good">Admin</span>
+                                        {% else %}
+                                            <span class="status-pill low">User</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if active_user.is_staff %}
+                                            <span class="text-muted small">All branches</span>
+                                        {% else %}
+                                            <form method="post" action="{% url 'set_user_branch' active_user.pk %}" class="d-flex gap-2 align-items-center">
+                                                {% csrf_token %}
+                                                <select name="branch" class="form-select form-select-sm" style="min-width: 160px;">
+                                                    <option value="">No branch</option>
+                                                    {% for branch_choice in branch_assignment_form.fields.branch.queryset %}
+                                                        <option value="{{ branch_choice.pk }}" {% if active_user.branch_assignment.branch_id == branch_choice.pk %}selected{% endif %}>
+                                                            {{ branch_choice.name }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="/admin/auth/user/{{ active_user.pk }}/password/" class="btn btn-sm btn-outline-secondary">Change</a>
+                                    </td>
+                                    <td class="small text-muted">{{ active_user.date_joined|date:"M d, Y" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">No active users found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

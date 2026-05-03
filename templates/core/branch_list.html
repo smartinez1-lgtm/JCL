@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Branches | JCL{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-4">
+        <div class="panel-title">
+            <div>
+                <span class="section-label mb-2">Admin Only</span>
+                <h1 class="h3 mb-1">Branches</h1>
+                <p class="text-muted mb-0">Create branches and check each branch status.</p>
+            </div>
+            <a href="{% url 'branch_create' %}" class="btn btn-primary">Add Branch</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Branch</th>
+                        <th>Items</th>
+                        <th>Low</th>
+                        <th>Missing</th>
+                        <th>Transactions</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for branch in branches %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ branch.name }}</div>
+                                <div class="small text-muted">{{ branch.address|default:"No address set" }}</div>
+                            </td>
+                            <td><span class="mono">{{ branch.item_count }}</span></td>
+                            <td><span class="status-pill low">{{ branch.low_stock_count }}</span></td>
+                            <td><span class="status-pill low">{{ branch.missing_count }}</span></td>
+                            <td><span class="mono">{{ branch.transaction_count }}</span></td>
+                            <td>
+                                {% if branch.is_active %}
+                                    <span class="status-pill good">Active</span>
+                                {% else %}
+                                    <span class="status-pill low">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="action-group">
+                                    <a href="{% url 'branch_detail' branch.pk %}" class="btn btn-sm btn-outline-primary">View Info</a>
+                                    <a href="{% url 'branch_update' branch.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    <a href="{% url 'branch_delete' branch.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No branches found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

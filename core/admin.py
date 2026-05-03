@@ -1,7 +1,7 @@
 """Admin registrations for convenient backend management."""
 from django.contrib import admin
 
-from .models import Branch, Item, Transaction, TransactionItem
+from .models import Branch, Item, Transaction, TransactionItem, UserBranchAssignment
 
 
 @admin.register(Branch)
@@ -10,6 +10,14 @@ class BranchAdmin(admin.ModelAdmin):
     list_filter = ("is_active", "date_added")
     search_fields = ("name", "address")
     readonly_fields = ("date_added",)
+
+
+@admin.register(UserBranchAssignment)
+class UserBranchAssignmentAdmin(admin.ModelAdmin):
+    list_display = ("user", "branch", "date_assigned")
+    list_filter = ("branch", "date_assigned")
+    search_fields = ("user__username", "user__email", "branch__name")
+    readonly_fields = ("date_assigned",)
 
 
 @admin.register(Item)

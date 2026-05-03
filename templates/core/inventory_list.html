@@ -69,8 +69,10 @@
                             <td><span class="mono">{{ item.quantity }}</span></td>
                             <td class="text-muted">{{ item.date_added|date:"M d, Y h:i A" }}</td>
                             <td class="text-end">
-                                <a href="{% url 'item_update' item.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                <a href="{% url 'item_delete' item.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                <div class="action-group">
+                                    <a href="{% url 'item_update' item.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    <a href="{% url 'item_delete' item.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </div>
                             </td>
                         </tr>
                     {% empty %}

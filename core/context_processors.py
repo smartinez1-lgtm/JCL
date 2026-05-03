@@ -6,6 +6,15 @@ from .forms import THEME_CHOICES
 
 def cart_summary(request):
     """Expose cart item count and grand total to all templates."""
+    can_use_cart = not (request.user.is_authenticated and request.user.is_staff)
+
+    if not can_use_cart:
+        return {
+            "can_use_cart": False,
+            "cart_items_count": 0,
+            "cart_total_amount": Decimal("0.00"),
+        }
+
     cart = request.session.get("cart", {})
     count = 0
     total = Decimal("0.00")
@@ -17,6 +26,7 @@ def cart_summary(request):
         total += price * quantity
 
     return {
+        "can_use_cart": True,
         "cart_items_count": count,
         "cart_total_amount": total,
     }
