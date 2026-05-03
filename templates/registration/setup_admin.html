@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Setup Admin | JCL{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <span class="section-label mb-3">Protected Setup</span>
+                    <h1 class="h3 mb-2">Create Admin Account</h1>
+                    <p class="text-muted mb-0">Use this once, then remove the setup key.</p>
+                </div>
+                <form method="post" action="{% url 'setup_admin' %}?key={{ setup_key|urlencode }}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Username</label>
+                        {{ form.username }}
+                        {% for error in form.username.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email</label>
+                        {{ form.email }}
+                        {% for error in form.email.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Password</label>
+                        {{ form.password }}
+                        {% for error in form.password.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Create Admin</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

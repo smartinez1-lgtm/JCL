@@ -7,6 +7,7 @@ from . import views
 
 urlpatterns = [
     path("", views.dashboard_view, name="dashboard"),
+    path("setup-admin/", views.setup_admin_view, name="setup_admin"),
     path("api/items/", api.api_items, name="api_items"),
     path("api/items/<int:item_id>/", api.api_item_detail, name="api_item_detail"),
     path("api/transactions/", api.api_transactions, name="api_transactions"),

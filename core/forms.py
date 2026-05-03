@@ -74,6 +74,23 @@ class ThemeSettingsForm(forms.Form):
     )
 
 
+class AdminSetupForm(forms.Form):
+    """One-time production form for creating a staff superuser."""
+
+    username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Admin username"}),
+    )
+    email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={"class": "form-control", "placeholder": "Email address"}),
+    )
+    password = forms.CharField(
+        min_length=8,
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Admin password"}),
+    )
+
+
 class SignUpForm(UserCreationForm):
     """Simple user registration form for first-time cashier/admin accounts."""
 

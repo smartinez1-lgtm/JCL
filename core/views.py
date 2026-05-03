@@ -1,16 +1,18 @@
 """Views for dashboard, inventory CRUD, cashier, and receipts."""
+import os
 from decimal import Decimal
 
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import get_user_model, login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import IntegrityError
 from django.db import transaction
 from django.db.models import Count, DecimalField, IntegerField, OuterRef, Q, Subquery, Sum, Value
 from django.db.models.functions import Coalesce
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import CartAddForm, CartUpdateForm, ItemForm, SearchForm, SignUpForm, ThemeSettingsForm
+from .forms import AdminSetupForm, CartAddForm, CartUpdateForm, ItemForm, SearchForm, SignUpForm, ThemeSettingsForm
 from .models import Branch, Item, Transaction, TransactionItem
 
 
@@ -46,6 +48,40 @@ def signup_view(request):
         form = SignUpForm()
 
     return render(request, "registration/signup.html", {"form": form})
+
+
+def setup_admin_view(request):
+    """Temporary protected route for creating the first production admin."""
+    setup_key = os.environ.get("SETUP_ADMIN_KEY", "")
+    provided_key = request.GET.get("key", "")
+
+    if not setup_key:
+        raise Http404("Admin setup is disabled.")
+    if provided_key != setup_key:
+        return HttpResponseForbidden("Invalid setup key.")
+
+    if request.method == "POST":
+        form = AdminSetupForm(request.POST)
+        if form.is_valid():
+            user_model = get_user_model()
+            username = form.cleaned_data["username"]
+            email = form.cleaned_data["email"]
+            password = form.cleaned_data["password"]
+            user, created = user_model.objects.get_or_create(username=username)
+            user.email = email
+            user.is_staff = True
+            user.is_superuser = True
+            user.set_password(password)
+            user.save()
+            messages.success(
+                request,
+                f"Admin account {'created' if created else 'updated'} successfully. You can log in now.",
+            )
+            return redirect("login")
+    else:
+        form = AdminSetupForm()
+
+    return render(request, "registration/setup_admin.html", {"form": form, "setup_key": provided_key})
 
 
 def _cart_details(session):
