@@ -785,6 +785,14 @@
                 navigator.serviceWorker.register("/service-worker.js").catch(function () {});
             });
         }
+        function goBackOrHome(button) {
+            var fallbackUrl = button.getAttribute("data-back-url") || "/";
+            if (window.history.length > 1 && document.referrer) {
+                window.history.back();
+            } else {
+                window.location.href = fallbackUrl;
+            }
+        }
     </script>
     {% block extra_js %}{% endblock %}
 </body>
