@@ -1,6 +1,8 @@
 """Template helpers for cart totals shown in the navbar."""
 from decimal import Decimal
 
+from .forms import THEME_CHOICES
+
 
 def cart_summary(request):
     """Expose cart item count and grand total to all templates."""
@@ -18,3 +20,14 @@ def cart_summary(request):
         "cart_items_count": count,
         "cart_total_amount": total,
     }
+
+
+def theme_settings(request):
+    """Expose the active theme name to every template."""
+    allowed_themes = {theme for theme, _ in THEME_CHOICES}
+    active_theme = request.session.get("site_theme", "pink")
+
+    if active_theme not in allowed_themes:
+        active_theme = "pink"
+
+    return {"active_theme": active_theme}

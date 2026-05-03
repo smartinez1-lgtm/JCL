@@ -67,6 +67,7 @@
                         <th>Branch</th>
                         <th>Items</th>
                         <th>Transactions</th>
+                        <th>Units Sold</th>
                         <th>Total Sales</th>
                         <th>Status</th>
                     </tr>
@@ -80,6 +81,7 @@
                             </td>
                             <td><span class="mono">{{ branch.item_count }}</span></td>
                             <td><span class="mono">{{ branch.transaction_count }}</span></td>
+                            <td><span class="mono">{{ branch.units_sold }}</span></td>
                             <td class="fw-semibold">Php {{ branch.total_sales|default:"0.00" }}</td>
                             <td>
                                 {% if branch.is_active %}
@@ -91,7 +93,7 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No branches found.</td>
+                            <td colspan="6" class="text-center text-muted py-4">No branches found.</td>
                         </tr>
                     {% endfor %}
                 </tbody>

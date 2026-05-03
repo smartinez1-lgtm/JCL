@@ -7,6 +7,14 @@ from django.contrib.auth.models import User
 from .models import Item
 
 
+THEME_CHOICES = [
+    ("pink", "JCL Pink"),
+    ("blue", "Ocean Blue"),
+    ("green", "Fresh Green"),
+    ("dark", "Night Mode"),
+]
+
+
 class ItemForm(forms.ModelForm):
     """Form used to create and update inventory items."""
 
@@ -54,6 +62,15 @@ class SearchForm(forms.Form):
                 "placeholder": "Search items by name...",
             }
         ),
+    )
+
+
+class ThemeSettingsForm(forms.Form):
+    """Stores the user's preferred website theme in their session."""
+
+    theme = forms.ChoiceField(
+        choices=THEME_CHOICES,
+        widget=forms.RadioSelect(attrs={"class": "theme-radio"}),
     )
 
 

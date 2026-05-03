@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Settings | JCL{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-layout {
+        max-width: 920px;
+        margin: 0 auto;
+    }
+    .theme-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+    .theme-options label {
+        display: block;
+        height: 100%;
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: var(--surface-strong);
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+    .theme-options label:has(input:checked) {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(240, 77, 148, 0.12);
+    }
+    .theme-options input {
+        margin-right: 0.45rem;
+    }
+    .theme-preview {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.35rem;
+        margin-top: 0.85rem;
+    }
+    .theme-swatch {
+        min-height: 2.6rem;
+        border-radius: 10px;
+    }
+    .theme-pink .theme-swatch:nth-child(1) {
+        background: #f04d94;
+    }
+    .theme-pink .theme-swatch:nth-child(2) {
+        background: #ffc4df;
+    }
+    .theme-pink .theme-swatch:nth-child(3) {
+        background: #fff8fc;
+    }
+    .theme-pink .theme-swatch:nth-child(4) {
+        background: #4a102c;
+    }
+    .theme-blue .theme-swatch:nth-child(1) {
+        background: #2186d9;
+    }
+    .theme-blue .theme-swatch:nth-child(2) {
+        background: #b9e3ff;
+    }
+    .theme-blue .theme-swatch:nth-child(3) {
+        background: #f7fbff;
+    }
+    .theme-blue .theme-swatch:nth-child(4) {
+        background: #0d2d4d;
+    }
+    .theme-green .theme-swatch:nth-child(1) {
+        background: #2fa66f;
+    }
+    .theme-green .theme-swatch:nth-child(2) {
+        background: #bff0d4;
+    }
+    .theme-green .theme-swatch:nth-child(3) {
+        background: #f8fffb;
+    }
+    .theme-green .theme-swatch:nth-child(4) {
+        background: #123c2f;
+    }
+    .theme-dark .theme-swatch:nth-child(1) {
+        background: #7cc7ff;
+    }
+    .theme-dark .theme-swatch:nth-child(2) {
+        background: #20242d;
+    }
+    .theme-dark .theme-swatch:nth-child(3) {
+        background: #11151d;
+    }
+    .theme-dark .theme-swatch:nth-child(4) {
+        background: #f4f7fb;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero-panel mb-4">
+    <div class="hero-orb"></div>
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-8">
+            <span class="section-label mb-3">Preferences</span>
+            <h1 class="display-6 mb-2">Website Settings</h1>
+            <p class="text-white-50 mb-0">Choose the theme used while you are signed in.</p>
+        </div>
+        <div class="col-lg-4">
+            <div class="quick-stat">
+                <div class="eyebrow">Active Theme</div>
+                <div class="value text-capitalize">{{ active_theme }}</div>
+                <div class="text-muted small">saved in your browser session</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="settings-layout">
+    <div class="card">
+        <div class="card-body p-4">
+            <div class="panel-title">
+                <div>
+                    <span class="section-label mb-2">Theme</span>
+                    <h2 class="h4 mb-1">Appearance</h2>
+                    <p class="text-muted mb-0">Admins and users can personalize the website colors.</p>
+                </div>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="theme-options mb-4">
+                    {% for choice in form.theme %}
+                        <label class="theme-{{ choice.data.value }}">
+                            <div class="fw-semibold">{{ choice.tag }} {{ choice.choice_label }}</div>
+                            <div class="theme-preview" aria-hidden="true">
+                                <span class="theme-swatch"></span>
+                                <span class="theme-swatch"></span>
+                                <span class="theme-swatch"></span>
+                                <span class="theme-swatch"></span>
+                            </div>
+                        </label>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check2-circle me-1"></i>
+                    Save Theme
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -6,10 +6,11 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import IntegrityError
 from django.db import transaction
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, DecimalField, IntegerField, OuterRef, Q, Subquery, Sum, Value
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import CartAddForm, CartUpdateForm, ItemForm, SearchForm, SignUpForm
+from .forms import CartAddForm, CartUpdateForm, ItemForm, SearchForm, SignUpForm, ThemeSettingsForm
 from .models import Branch, Item, Transaction, TransactionItem
 
 
@@ -92,6 +93,12 @@ def dashboard_view(request):
         return redirect("cashier")
 
     items = Item.objects.select_related("branch").all()
+    branch_transaction_totals = Transaction.objects.filter(branch=OuterRef("pk")).values("branch").annotate(
+        total=Sum("total_amount")
+    )
+    branch_units_sold = TransactionItem.objects.filter(transaction__branch=OuterRef("pk")).values(
+        "transaction__branch"
+    ).annotate(total=Sum("quantity"))
     low_stock_count = items.filter(quantity__lt=5).count()
     total_stock = items.aggregate(total=Sum("quantity"))["total"] or 0
     total_items = items.count()
@@ -103,7 +110,16 @@ def dashboard_view(request):
         "branch_sales": Branch.objects.annotate(
             item_count=Count("items", distinct=True),
             transaction_count=Count("transactions", distinct=True),
-            total_sales=Sum("transactions__total_amount"),
+            total_sales=Coalesce(
+                Subquery(branch_transaction_totals.values("total")[:1]),
+                Value(Decimal("0.00")),
+                output_field=DecimalField(max_digits=10, decimal_places=2),
+            ),
+            units_sold=Coalesce(
+                Subquery(branch_units_sold.values("total")[:1]),
+                Value(0),
+                output_field=IntegerField(),
+            ),
         ),
         "total_items": total_items,
         "total_stock": total_stock,
@@ -117,6 +133,22 @@ def dashboard_view(request):
         "low_stock_items": items.filter(quantity__lt=5)[:5],
     }
     return render(request, "core/dashboard.html", context)
+
+
+@login_required
+def settings_view(request):
+    """Let each signed-in user choose the website theme for their session."""
+    if request.method == "POST":
+        form = ThemeSettingsForm(request.POST)
+        if form.is_valid():
+            request.session["site_theme"] = form.cleaned_data["theme"]
+            request.session.modified = True
+            messages.success(request, "Theme updated successfully.")
+            return redirect("settings")
+    else:
+        form = ThemeSettingsForm(initial={"theme": request.session.get("site_theme", "pink")})
+
+    return render(request, "core/settings.html", {"form": form})
 
 
 @login_required

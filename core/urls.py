@@ -15,6 +15,7 @@ urlpatterns = [
     path("inventory/add/", views.item_create_view, name="item_create"),
     path("inventory/<int:pk>/edit/", views.item_update_view, name="item_update"),
     path("inventory/<int:pk>/delete/", views.item_delete_view, name="item_delete"),
+    path("settings/", views.settings_view, name="settings"),
     path("cashier/", views.cashier_view, name="cashier"),
     path("cashier/add-multiple/", views.add_multiple_to_cart_view, name="add_multiple_to_cart"),
     path("cashier/add/<int:item_id>/", views.add_to_cart_view, name="add_to_cart"),
