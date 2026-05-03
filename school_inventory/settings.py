@@ -36,6 +36,12 @@ if os.environ.get("RENDER_EXTERNAL_HOSTNAME"):
 else:
     render_hostname = ""
 
+if os.environ.get("VERCEL_URL"):
+    vercel_hostname = os.environ["VERCEL_URL"]
+    ALLOWED_HOSTS.extend([vercel_hostname, ".vercel.app"])
+else:
+    vercel_hostname = ""
+
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
@@ -44,6 +50,9 @@ CSRF_TRUSTED_ORIGINS = [
 
 if render_hostname:
     CSRF_TRUSTED_ORIGINS.append(f"https://{render_hostname}")
+
+if vercel_hostname:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{vercel_hostname}")
 
 
 INSTALLED_APPS = [
