@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
-from .models import Item, Transaction, TransactionItem
+from .models import Branch, Item, Transaction, TransactionItem
 
 
 def _error(message, status=400, errors=None):
@@ -24,6 +24,16 @@ def _require_user(request):
     if request.user.is_authenticated:
         return None
     return _error("Authentication required.", status=401)
+
+
+def _require_staff(request):
+    """Require an authenticated staff user for admin-only API data."""
+    auth_error = _require_user(request)
+    if auth_error:
+        return auth_error
+    if not request.user.is_staff:
+        return _error("Admin access required.", status=403)
+    return None
 
 
 def _read_json(request):
@@ -69,6 +79,8 @@ def _item_payload(item):
     """Serialize an Item model for API responses."""
     return {
         "id": item.id,
+        "branch_id": item.branch_id,
+        "branch": item.branch.name,
         "name": item.name,
         "description": item.description or "",
         "price": str(item.price),
@@ -82,6 +94,8 @@ def _transaction_payload(transaction):
     """Serialize a Transaction model with its line items."""
     return {
         "id": transaction.id,
+        "branch_id": transaction.branch_id,
+        "branch": transaction.branch.name,
         "date": transaction.date.isoformat(),
         "total_amount": str(transaction.total_amount),
         "items": [
@@ -106,14 +120,22 @@ def api_items(request):
 
     if request.method == "GET":
         query = request.GET.get("q", "").strip()
-        items = Item.objects.all()
+        items = Item.objects.select_related("branch").all()
         if query:
             items = items.filter(Q(name__icontains=query) | Q(description__icontains=query))
         return JsonResponse({"items": [_item_payload(item) for item in items]})
 
     try:
+        staff_error = _require_staff(request)
+        if staff_error:
+            return staff_error
+
         data = _read_json(request)
+        branch = None
+        if data.get("branch_id"):
+            branch = Branch.objects.get(pk=_integer(data.get("branch_id"), "branch_id"))
         item = Item(
+            branch=branch or Branch.objects.get_or_create(name="Main Branch")[0],
             name=data.get("name", ""),
             description=data.get("description", ""),
             price=_decimal(data.get("price"), "price"),
@@ -123,6 +145,8 @@ def api_items(request):
         item.save()
     except ValueError as error:
         return _error(str(error))
+    except Branch.DoesNotExist:
+        return _error("Branch not found.", status=404)
     except ValidationError as error:
         return _error("Item validation failed.", errors=_validation_details(error))
 
@@ -137,12 +161,16 @@ def api_item_detail(request, item_id):
         return auth_error
 
     try:
-        item = Item.objects.get(pk=item_id)
+        item = Item.objects.select_related("branch").get(pk=item_id)
     except Item.DoesNotExist:
         return _error("Item not found.", status=404)
 
     if request.method == "GET":
         return JsonResponse({"item": _item_payload(item)})
+
+    staff_error = _require_staff(request)
+    if staff_error:
+        return staff_error
 
     if request.method == "DELETE":
         item.sales.update(item_name=item.name, item_price=item.price)
@@ -155,6 +183,8 @@ def api_item_detail(request, item_id):
             item.name = data["name"]
         if "description" in data:
             item.description = data["description"]
+        if "branch_id" in data:
+            item.branch = Branch.objects.get(pk=_integer(data["branch_id"], "branch_id"))
         if "price" in data:
             item.price = _decimal(data["price"], "price")
         if "quantity" in data:
@@ -163,6 +193,8 @@ def api_item_detail(request, item_id):
         item.save()
     except ValueError as error:
         return _error(str(error))
+    except Branch.DoesNotExist:
+        return _error("Branch not found.", status=404)
     except ValidationError as error:
         return _error("Item validation failed.", errors=_validation_details(error))
 
@@ -172,11 +204,14 @@ def api_item_detail(request, item_id):
 @require_http_methods(["GET"])
 def api_transactions(request):
     """List saved cashier transactions."""
-    auth_error = _require_user(request)
+    auth_error = _require_staff(request)
     if auth_error:
         return auth_error
 
-    transactions = Transaction.objects.prefetch_related("transaction_items", "transaction_items__item")[:50]
+    transactions = Transaction.objects.select_related("branch").prefetch_related(
+        "transaction_items",
+        "transaction_items__item",
+    )[:50]
     return JsonResponse({"transactions": [_transaction_payload(transaction) for transaction in transactions]})
 
 
@@ -218,14 +253,18 @@ def api_checkout(request):
         item_ids = [line["item_id"] for line in requested]
         items_by_id = {
             item.id: item
-            for item in Item.objects.select_for_update().filter(id__in=item_ids)
+            for item in Item.objects.select_for_update().select_related("branch").filter(id__in=item_ids)
         }
 
         missing_ids = sorted(set(item_ids) - set(items_by_id.keys()))
         if missing_ids:
             return _error("One or more items were not found.", status=404, errors={"item_ids": missing_ids})
 
-        transaction_record = Transaction.objects.create(total_amount=Decimal("0.00"))
+        first_item = items_by_id[requested[0]["item_id"]]
+        transaction_record = Transaction.objects.create(
+            branch=first_item.branch,
+            total_amount=Decimal("0.00"),
+        )
         total_amount = Decimal("0.00")
 
         for line in requested:
@@ -257,7 +296,7 @@ def api_checkout(request):
         transaction_record.total_amount = total_amount
         transaction_record.save()
 
-    transaction_record = Transaction.objects.prefetch_related(
+    transaction_record = Transaction.objects.select_related("branch").prefetch_related(
         "transaction_items",
         "transaction_items__item",
     ).get(pk=transaction_record.pk)

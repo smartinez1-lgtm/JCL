@@ -44,6 +44,7 @@
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Branch</th>
                         <th>Description</th>
                         <th>Price</th>
                         <th>Quantity</th>
@@ -62,6 +63,7 @@
                                     <span class="status-pill good mt-2">Ready</span>
                                 {% endif %}
                             </td>
+                            <td class="fw-semibold">{{ item.branch.name }}</td>
                             <td>{{ item.description|default:"-"|truncatechars:60 }}</td>
                             <td class="fw-semibold">Php {{ item.price }}</td>
                             <td><span class="mono">{{ item.quantity }}</span></td>
@@ -73,7 +75,7 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">No items found.</td>
+                            <td colspan="7" class="text-center text-muted py-4">No items found.</td>
                         </tr>
                     {% endfor %}
                 </tbody>

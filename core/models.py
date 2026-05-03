@@ -5,9 +5,36 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
+def get_default_branch():
+    """Return the default branch id for newly created records."""
+    branch, _ = Branch.objects.get_or_create(name="Main Branch")
+    return branch.pk
+
+
+class Branch(models.Model):
+    """Represents one store branch or selling location."""
+
+    name = models.CharField(max_length=150, unique=True)
+    address = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Item(models.Model):
     """Stores inventory details for a single sellable item."""
 
+    branch = models.ForeignKey(
+        Branch,
+        on_delete=models.PROTECT,
+        related_name="items",
+        default=get_default_branch,
+    )
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -36,6 +63,12 @@ class Item(models.Model):
 class Transaction(models.Model):
     """Represents one completed cashier checkout."""
 
+    branch = models.ForeignKey(
+        Branch,
+        on_delete=models.PROTECT,
+        related_name="transactions",
+        default=get_default_branch,
+    )
     date = models.DateTimeField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 

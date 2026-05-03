@@ -3,14 +3,19 @@ from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import IntegrityError
 from django.db import transaction
 from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CartAddForm, CartUpdateForm, ItemForm, SearchForm, SignUpForm
-from .models import Item, Transaction, TransactionItem
+from .models import Branch, Item, Transaction, TransactionItem
+
+
+def _is_admin_user(user):
+    """Allow only staff/admin users into management-only pages."""
+    return user.is_authenticated and user.is_staff
 
 
 def _get_cart(session):
@@ -83,7 +88,10 @@ def _cart_details(session):
 @login_required
 def dashboard_view(request):
     """Show quick summary cards for inventory and cashier activity."""
-    items = Item.objects.all()
+    if not request.user.is_staff:
+        return redirect("cashier")
+
+    items = Item.objects.select_related("branch").all()
     low_stock_count = items.filter(quantity__lt=5).count()
     total_stock = items.aggregate(total=Sum("quantity"))["total"] or 0
     total_items = items.count()
@@ -91,22 +99,32 @@ def dashboard_view(request):
     total_sales = Transaction.objects.aggregate(total=Sum("total_amount"))["total"] or Decimal("0.00")
 
     context = {
+        "branch_count": Branch.objects.filter(is_active=True).count(),
+        "branch_sales": Branch.objects.annotate(
+            item_count=Count("items", distinct=True),
+            transaction_count=Count("transactions", distinct=True),
+            total_sales=Sum("transactions__total_amount"),
+        ),
         "total_items": total_items,
         "total_stock": total_stock,
         "low_stock_count": low_stock_count,
         "transaction_count": transaction_count,
         "total_sales": total_sales,
-        "recent_transactions": Transaction.objects.prefetch_related("transaction_items", "transaction_items__item")[:5],
+        "recent_transactions": Transaction.objects.select_related("branch").prefetch_related(
+            "transaction_items",
+            "transaction_items__item",
+        )[:5],
         "low_stock_items": items.filter(quantity__lt=5)[:5],
     }
     return render(request, "core/dashboard.html", context)
 
 
 @login_required
+@user_passes_test(_is_admin_user)
 def inventory_list_view(request):
     """List inventory items and optionally filter them by search term."""
     form = SearchForm(request.GET)
-    items = Item.objects.all()
+    items = Item.objects.select_related("branch").all()
 
     if form.is_valid():
         query = form.cleaned_data["q"]
@@ -121,6 +139,7 @@ def inventory_list_view(request):
 
 
 @login_required
+@user_passes_test(_is_admin_user)
 def item_create_view(request):
     """Create a new item and return to the inventory list on success."""
     if request.method == "POST":
@@ -140,6 +159,7 @@ def item_create_view(request):
 
 
 @login_required
+@user_passes_test(_is_admin_user)
 def item_update_view(request, pk):
     """Edit an existing item."""
     item = get_object_or_404(Item, pk=pk)
@@ -166,6 +186,7 @@ def item_update_view(request, pk):
 
 
 @login_required
+@user_passes_test(_is_admin_user)
 def item_delete_view(request, pk):
     """Confirm and delete an item."""
     item = get_object_or_404(Item, pk=pk)
@@ -183,7 +204,7 @@ def item_delete_view(request, pk):
 def cashier_view(request):
     """Show sellable items together with the current cart."""
     search_form = SearchForm(request.GET)
-    items = Item.objects.filter(quantity__gt=0)
+    items = Item.objects.select_related("branch").filter(quantity__gt=0, branch__is_active=True)
 
     if search_form.is_valid():
         query = search_form.cleaned_data["q"]
@@ -242,7 +263,7 @@ def add_multiple_to_cart_view(request):
     if request.method != "POST":
         return redirect("cashier")
 
-    items = Item.objects.filter(quantity__gt=0)
+    items = Item.objects.select_related("branch").filter(quantity__gt=0, branch__is_active=True)
     cart = _get_cart(request.session)
     added_count = 0
     errors = []
@@ -342,7 +363,11 @@ def checkout_view(request):
         return redirect("cashier")
 
     with transaction.atomic():
-        transaction_record = Transaction.objects.create(total_amount=Decimal("0.00"))
+        first_line = cart_data["lines"][0]
+        transaction_record = Transaction.objects.create(
+            branch=first_line["item"].branch,
+            total_amount=Decimal("0.00"),
+        )
         total_amount = Decimal("0.00")
 
         for line in cart_data["lines"]:
@@ -385,7 +410,7 @@ def checkout_view(request):
 def receipt_view(request, transaction_id):
     """Display a simple printable receipt."""
     transaction_record = get_object_or_404(
-        Transaction.objects.prefetch_related("transaction_items", "transaction_items__item"),
+        Transaction.objects.select_related("branch").prefetch_related("transaction_items", "transaction_items__item"),
         pk=transaction_id,
     )
     return render(request, "core/receipt.html", {"transaction": transaction_record})

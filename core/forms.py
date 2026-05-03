@@ -12,8 +12,9 @@ class ItemForm(forms.ModelForm):
 
     class Meta:
         model = Item
-        fields = ["name", "description", "price", "quantity"]
+        fields = ["branch", "name", "description", "price", "quantity"]
         widgets = {
+            "branch": forms.Select(attrs={"class": "form-select"}),
             "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Item name"}),
             "description": forms.Textarea(
                 attrs={"class": "form-control", "rows": 3, "placeholder": "Optional description"}

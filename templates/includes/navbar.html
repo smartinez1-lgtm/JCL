@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark topbar px-3 px-lg-4 py-3">
     <div class="container-fluid px-0">
-        <a class="navbar-brand" href="{% url 'dashboard' %}">
+        <a class="navbar-brand" href="{% if request.user.is_staff %}{% url 'dashboard' %}{% else %}{% url 'cashier' %}{% endif %}">
             <span class="brand-mark">JCL</span>
             <span>
                 JCL
@@ -12,30 +12,34 @@
         </button>
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-2">
-                <li class="nav-item">
-                    <a class="nav-link icon-nav" href="{% url 'dashboard' %}" title="Dashboard" aria-label="Dashboard">
-                        <i class="bi bi-grid-1x2-fill"></i>
-                        <span class="label">Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link icon-nav" href="{% url 'inventory_list' %}" title="Stock" aria-label="Stock">
-                        <i class="bi bi-box-seam-fill"></i>
-                        <span class="label">Stock</span>
-                    </a>
-                </li>
+                {% if request.user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link icon-nav" href="{% url 'dashboard' %}" title="Dashboard" aria-label="Dashboard">
+                            <i class="bi bi-grid-1x2-fill"></i>
+                            <span class="label">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link icon-nav" href="{% url 'inventory_list' %}" title="Stock" aria-label="Stock">
+                            <i class="bi bi-box-seam-fill"></i>
+                            <span class="label">Stock</span>
+                        </a>
+                    </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link icon-nav" href="{% url 'cashier' %}" title="Cart" aria-label="Cart">
                         <i class="bi bi-cart3"></i>
                         <span class="label">Cart</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link icon-nav" href="/admin/" title="Admin" aria-label="Admin">
-                        <i class="bi bi-shield-lock-fill"></i>
-                        <span class="label">Admin</span>
-                    </a>
-                </li>
+                {% if request.user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link icon-nav" href="/admin/" title="Admin" aria-label="Admin">
+                            <i class="bi bi-shield-lock-fill"></i>
+                            <span class="label">Admin</span>
+                        </a>
+                    </li>
+                {% endif %}
             </ul>
             <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 text-white">
                 <div class="metric-chip metric-chip-light">
