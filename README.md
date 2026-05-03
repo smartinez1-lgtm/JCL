@@ -134,6 +134,27 @@ CSRF_COOKIE_SECURE=True
 If your host provides PostgreSQL, set `DATABASE_URL` to the database connection
 string. If `DATABASE_URL` is not set, the app uses the local SQLite database.
 
+### Vercel
+
+This repo includes `api/index.py` and `vercel.json` so Vercel can route all
+requests into the Django WSGI app.
+
+For Vercel production, set these environment variables in Project Settings:
+
+```text
+DEBUG=False
+SECRET_KEY=<a long random secret>
+DATABASE_URL=<your hosted PostgreSQL connection string>
+SECURE_SSL_REDIRECT=True
+SESSION_COOKIE_SECURE=True
+CSRF_COOKIE_SECURE=True
+```
+
+Use a hosted PostgreSQL database such as Vercel Postgres, Neon, Supabase, or
+Render PostgreSQL. Do not rely on the local `db.sqlite3` file on Vercel:
+serverless deployments cannot persist normal database writes there, so login,
+checkout, admin changes, and branch creation can fail with server errors.
+
 Build command:
 
 ```bash

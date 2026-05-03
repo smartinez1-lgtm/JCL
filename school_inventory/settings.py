@@ -16,7 +16,7 @@ def env_bool(name, default=False):
     return os.environ.get(name, str(default)).lower() in {"1", "true", "yes", "on"}
 
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-change-me-for-production")
+SECRET_KEY = os.environ.get("SECRET_KEY") or os.environ.get("DJANGO_SECRET", "django-insecure-change-me-for-production")
 
 DEBUG = env_bool("DEBUG", True)
 RUNNING_DEV_SERVER = any(arg == "runserver" or arg.startswith("runserver:") for arg in sys.argv)
@@ -42,6 +42,12 @@ if os.environ.get("VERCEL_URL"):
 else:
     vercel_hostname = ""
 
+if os.environ.get("VERCEL_PROJECT_PRODUCTION_URL"):
+    production_hostname = os.environ["VERCEL_PROJECT_PRODUCTION_URL"]
+    ALLOWED_HOSTS.append(production_hostname)
+else:
+    production_hostname = ""
+
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
@@ -53,6 +59,9 @@ if render_hostname:
 
 if vercel_hostname:
     CSRF_TRUSTED_ORIGINS.append(f"https://{vercel_hostname}")
+
+if production_hostname:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{production_hostname}")
 
 
 INSTALLED_APPS = [
@@ -106,10 +115,13 @@ DATABASES = {
     }
 }
 
-if os.environ.get("DATABASE_URL"):
+database_url = os.environ.get("DATABASE_URL") or os.environ.get("POSTGRES_URL")
+
+if database_url:
     import dj_database_url
 
-    DATABASES["default"] = dj_database_url.config(
+    DATABASES["default"] = dj_database_url.parse(
+        database_url,
         conn_max_age=600,
         conn_health_checks=True,
     )
