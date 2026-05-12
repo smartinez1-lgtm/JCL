@@ -6,7 +6,7 @@ from .forms import THEME_CHOICES
 
 def cart_summary(request):
     """Expose cart item count and grand total to all templates."""
-    can_use_cart = not (request.user.is_authenticated and request.user.is_staff)
+    can_use_cart = request.user.is_authenticated
 
     if not can_use_cart:
         return {

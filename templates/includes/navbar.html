@@ -1,3 +1,100 @@
+{% if request.user.is_authenticated and request.user.is_staff %}
+<aside class="admin-sidebar no-print" aria-label="Admin navigation">
+    <a class="sidebar-brand" href="{% url 'dashboard' %}" title="Dashboard">
+        <span class="brand-mark"><i class="bi bi-box-seam-fill"></i></span>
+        <span class="sidebar-brand-text">JCL Store</span>
+    </a>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}" title="Dashboard" aria-label="Dashboard">
+            <i class="bi bi-grid-1x2-fill"></i>
+            <span>Dashboard</span>
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'cashier' %}active{% endif %}" href="{% url 'cashier' %}" title="Point of Sale" aria-label="Point of Sale">
+            <i class="bi bi-cart3"></i>
+            <span>Point of Sale</span>
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'inventory_list' or request.resolver_match.url_name == 'item_create' or request.resolver_match.url_name == 'item_update' or request.resolver_match.url_name == 'item_delete' %}active{% endif %}" href="{% url 'inventory_list' %}" title="Products" aria-label="Products">
+            <i class="bi bi-box-seam-fill"></i>
+            <span>Products</span>
+        </a>
+        <a class="sidebar-link" href="{% url 'item_create' %}" title="Add Item" aria-label="Add Item">
+            <i class="bi bi-plus-square-fill"></i>
+            <span>Add Item</span>
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'branch_list' or request.resolver_match.url_name == 'branch_detail' or request.resolver_match.url_name == 'branch_create' or request.resolver_match.url_name == 'branch_update' %}active{% endif %}" href="{% url 'branch_list' %}" title="Branches" aria-label="Branches">
+            <i class="bi bi-diagram-3-fill"></i>
+            <span>Branches</span>
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" href="{% url 'settings' %}" title="Settings" aria-label="Settings">
+            <i class="bi bi-gear-fill"></i>
+            <span>Settings</span>
+        </a>
+        <div class="sidebar-section-label">Admin</div>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'user_management' %}active{% endif %}" href="{% url 'user_management' %}" title="Users" aria-label="Users">
+            <i class="bi bi-person-check-fill"></i>
+            <span>User Approvals</span>
+        </a>
+        <a class="sidebar-link" href="/admin/" title="Django Admin" aria-label="Django Admin">
+            <i class="bi bi-shield-lock-fill"></i>
+            <span>View Staff</span>
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <span class="user-chip"><i class="bi bi-person-fill"></i></span>
+            <span>{{ request.user.username }}</span>
+        </div>
+        <button type="button" class="sidebar-link sidebar-button" data-back-url="{% url 'dashboard' %}" onclick="goBackOrHome(this)" title="Back" aria-label="Back">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back</span>
+        </button>
+        <form method="post" action="{% url 'logout' %}" class="mb-0">
+            {% csrf_token %}
+            <button type="submit" class="sidebar-link sidebar-button" title="Logout" aria-label="Logout">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </button>
+        </form>
+    </div>
+</aside>
+
+<nav class="mobile-adminbar navbar navbar-dark topbar px-3 py-3 no-print">
+    <a class="navbar-brand" href="{% url 'dashboard' %}">
+        <span class="brand-mark">JCL</span>
+        <span>Admin</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminMobileMenu" aria-controls="adminMobileMenu" aria-label="Open menu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</nav>
+
+<div class="offcanvas offcanvas-start admin-mobile-menu no-print" tabindex="-1" id="adminMobileMenu" aria-labelledby="adminMobileMenuLabel">
+    <div class="offcanvas-header">
+        <h2 class="offcanvas-title h5" id="adminMobileMenuLabel">JCL Admin</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="mobile-user-row">
+            <span class="user-chip"><i class="bi bi-person-fill"></i></span>
+            <span class="fw-semibold">{{ request.user.username }}</span>
+        </div>
+        <div class="mobile-menu-grid">
+            <a class="sidebar-link" href="{% url 'dashboard' %}"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
+            <a class="sidebar-link" href="{% url 'inventory_list' %}"><i class="bi bi-box-seam-fill"></i><span>Stock</span></a>
+            <a class="sidebar-link" href="{% url 'item_create' %}"><i class="bi bi-plus-square-fill"></i><span>Add Item</span></a>
+            <a class="sidebar-link" href="{% url 'branch_list' %}"><i class="bi bi-diagram-3-fill"></i><span>Branches</span></a>
+            <a class="sidebar-link" href="{% url 'cashier' %}"><i class="bi bi-cart3"></i><span>Cashier</span></a>
+            <a class="sidebar-link" href="{% url 'user_management' %}"><i class="bi bi-people-fill"></i><span>Users</span></a>
+            <a class="sidebar-link" href="{% url 'settings' %}"><i class="bi bi-gear-fill"></i><span>Settings</span></a>
+            <a class="sidebar-link" href="/admin/"><i class="bi bi-shield-lock-fill"></i><span>Admin</span></a>
+        </div>
+        <form method="post" action="{% url 'logout' %}" class="d-grid mt-3">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-primary">Logout</button>
+        </form>
+    </div>
+</div>
+{% else %}
 <nav class="navbar navbar-expand-lg navbar-dark topbar px-3 px-lg-4 py-3">
     <div class="container-fluid px-0">
         <a class="navbar-brand" href="{% if request.user.is_staff %}{% url 'dashboard' %}{% else %}{% url 'cashier' %}{% endif %}">
@@ -12,32 +109,6 @@
         </button>
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-2">
-                {% if request.user.is_staff %}
-                    <li class="nav-item">
-                        <a class="nav-link icon-nav" href="{% url 'dashboard' %}" title="Dashboard" aria-label="Dashboard">
-                            <i class="bi bi-grid-1x2-fill"></i>
-                            <span class="label">Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link icon-nav" href="{% url 'inventory_list' %}" title="Stock" aria-label="Stock">
-                            <i class="bi bi-box-seam-fill"></i>
-                            <span class="label">Stock</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link icon-nav" href="{% url 'branch_list' %}" title="Branches" aria-label="Branches">
-                            <i class="bi bi-diagram-3-fill"></i>
-                            <span class="label">Branches</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link icon-nav" href="{% url 'user_management' %}" title="Users" aria-label="Users">
-                            <i class="bi bi-people-fill"></i>
-                            <span class="label">Users</span>
-                        </a>
-                    </li>
-                {% endif %}
                 {% if can_use_cart %}
                     <li class="nav-item">
                         <a class="nav-link icon-nav" href="{% url 'cashier' %}" title="Cart" aria-label="Cart">
@@ -54,18 +125,10 @@
                         </a>
                     </li>
                 {% endif %}
-                {% if request.user.is_staff %}
-                    <li class="nav-item">
-                        <a class="nav-link icon-nav" href="/admin/" title="Admin" aria-label="Admin">
-                            <i class="bi bi-shield-lock-fill"></i>
-                            <span class="label">Admin</span>
-                        </a>
-                    </li>
-                {% endif %}
             </ul>
             <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 text-white">
                 {% if request.user.is_authenticated %}
-                    <button type="button" class="btn btn-sm btn-outline-light" data-back-url="{% if request.user.is_staff %}{% url 'dashboard' %}{% else %}{% url 'cashier' %}{% endif %}" onclick="goBackOrHome(this)" title="Back" aria-label="Back">
+                    <button type="button" class="btn btn-sm btn-outline-light" data-back-url="{% url 'cashier' %}" onclick="goBackOrHome(this)" title="Back" aria-label="Back">
                         <i class="bi bi-arrow-left"></i>
                     </button>
                 {% endif %}
@@ -99,3 +162,4 @@
         </div>
     </div>
 </nav>
+{% endif %}

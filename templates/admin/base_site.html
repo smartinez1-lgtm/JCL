@@ -1,0 +1,19 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | JCL Admin{% endblock %}
+
+{% block branding %}
+<div class="jcl-admin-brand">
+    <span class="jcl-admin-mark">JCL</span>
+    <div>
+        <h1 id="site-name"><a href="{% url 'admin:index' %}">JCL Admin</a></h1>
+        <span>Inventory control panel</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/jcl_admin.css' %}">
+{% endblock %}

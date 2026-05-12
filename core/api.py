@@ -37,12 +37,10 @@ def _require_staff(request):
 
 
 def _require_cashier_user(request):
-    """Require a non-staff user for cashier/cart API actions."""
+    """Require an authenticated user for cashier/cart API actions."""
     auth_error = _require_user(request)
     if auth_error:
         return auth_error
-    if request.user.is_staff:
-        return _error("Cart access is for user accounts only.", status=403)
     return None
 
 

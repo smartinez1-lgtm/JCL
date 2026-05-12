@@ -27,7 +27,7 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-if DEBUG and "*" not in ALLOWED_HOSTS:
+if (DEBUG or RUNNING_DEV_SERVER) and "*" not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.extend(["0.0.0.0", "*"])
 
 if os.environ.get("RENDER_EXTERNAL_HOSTNAME"):

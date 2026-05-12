@@ -18,6 +18,11 @@ THEME_CHOICES = [
 class ItemForm(forms.ModelForm):
     """Form used to create and update inventory items."""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        Branch.objects.get_or_create(name="Main Branch", defaults={"is_active": True})
+        self.fields["branch"].queryset = Branch.objects.filter(is_active=True).order_by("name")
+
     class Meta:
         model = Item
         fields = ["branch", "name", "description", "price", "quantity"]

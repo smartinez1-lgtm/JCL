@@ -118,10 +118,6 @@
                 radial-gradient(circle at 86% 12%, rgba(88, 184, 239, 0.08), transparent 20%),
                 linear-gradient(180deg, #11151d 0%, #171b24 100%);
         }
-        body.admin-user a[href="/cashier/"],
-        body.admin-user .topbar .metric-chip-light {
-            display: none !important;
-        }
         body::before {
             content: "";
             position: fixed;
@@ -255,6 +251,202 @@
         }
         .navbar-wrap {
             padding-top: 1rem;
+        }
+        .admin-user .navbar-wrap {
+            max-width: none;
+            padding: 0;
+        }
+        .admin-user main.app-shell {
+            max-width: none;
+            width: calc(100% - 18rem);
+            margin-left: 18rem;
+            margin-right: 0;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+        .admin-sidebar {
+            position: fixed;
+            inset: 0 auto 0 0;
+            width: 16.5rem;
+            z-index: 1030;
+            display: flex;
+            flex-direction: column;
+            gap: 1.4rem;
+            padding: 0;
+            border-right: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.86);
+            box-shadow: 10px 0 40px rgba(172, 38, 102, 0.08);
+            backdrop-filter: blur(18px);
+        }
+        body[data-theme="blue"] .admin-sidebar {
+            box-shadow: 10px 0 40px rgba(28, 106, 166, 0.08);
+        }
+        body[data-theme="green"] .admin-sidebar {
+            box-shadow: 10px 0 40px rgba(32, 126, 86, 0.08);
+        }
+        body[data-theme="dark"] .admin-sidebar {
+            background: rgba(24, 27, 34, 0.92);
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.28);
+        }
+        .sidebar-brand {
+            min-height: 5.6rem;
+            width: 100%;
+            padding: 1.2rem 1.45rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: linear-gradient(135deg, var(--primary), #f86cb0);
+            color: #fff;
+            font-size: 1.25rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+        .sidebar-brand .brand-mark {
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.16);
+            color: #fff;
+        }
+        .sidebar-brand-text {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .sidebar-nav,
+        .sidebar-footer,
+        .mobile-menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            width: 100%;
+        }
+        .sidebar-nav {
+            flex: 1;
+            padding: 0 1rem;
+        }
+        .sidebar-link {
+            position: relative;
+            width: 100%;
+            min-height: 3.35rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.9rem;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--ink);
+            text-decoration: none;
+            font-weight: 700;
+            padding: 0.78rem 0.9rem;
+            transition: 0.2s ease;
+        }
+        .sidebar-link:hover,
+        .sidebar-link:focus {
+            color: var(--primary-deep);
+            background: rgba(240, 77, 148, 0.08);
+            transform: translateY(-1px);
+        }
+        .sidebar-link.active {
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), #f86cb0);
+            box-shadow: 0 12px 24px rgba(230, 73, 128, 0.2);
+        }
+        .sidebar-link i {
+            width: 1.25rem;
+            text-align: center;
+            flex: 0 0 auto;
+            font-size: 1.05rem;
+        }
+        .sidebar-link span {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.96rem;
+        }
+        .sidebar-button {
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+        .sidebar-section-label {
+            margin: 1.35rem 0 0.35rem;
+            padding: 0 0.9rem;
+            color: var(--muted);
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            margin-bottom: 0.6rem;
+            padding: 0.65rem 0.75rem;
+            border-radius: 12px;
+            background: rgba(240, 77, 148, 0.08);
+            color: var(--ink);
+            font-weight: 800;
+        }
+        .sidebar-user .user-chip {
+            width: 2.1rem;
+            height: 2.1rem;
+            border-radius: 12px;
+            background: var(--primary);
+            border: 0;
+            font-size: 0.9rem;
+        }
+        .sidebar-user span:last-child {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .mobile-adminbar {
+            display: none;
+            margin: 0.5rem 0.85rem 0;
+        }
+        .admin-mobile-menu {
+            background: var(--surface-strong);
+            color: var(--ink);
+        }
+        .mobile-user-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 14px;
+            background: rgba(240, 77, 148, 0.08);
+        }
+        .admin-mobile-menu .mobile-menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .admin-mobile-menu .sidebar-link {
+            min-height: 4.4rem;
+            flex-direction: column;
+            color: var(--ink);
+            background: rgba(240, 77, 148, 0.08);
+            border-color: var(--border);
+        }
+        .admin-mobile-menu .sidebar-link span {
+            position: static;
+            transform: none;
+            opacity: 1;
+            padding: 0;
+            background: transparent;
+            box-shadow: none;
+            white-space: normal;
+            pointer-events: auto;
         }
         .topbar {
             border: 1px solid rgba(255,255,255,0.22);
@@ -602,7 +794,41 @@
                 padding: 0;
             }
         }
-        @media (max-width: 991.98px) {
+        @media (max-width: 1199.98px) {
+            .admin-sidebar {
+                width: 14.75rem;
+            }
+            .admin-user main.app-shell {
+                width: calc(100% - 15.8rem);
+                margin-left: 15.8rem;
+                padding-left: 1.1rem;
+                padding-right: 1.1rem;
+            }
+            .sidebar-brand {
+                padding-left: 1.1rem;
+                padding-right: 1.1rem;
+            }
+            .sidebar-nav,
+            .sidebar-footer {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+        }
+        @media (max-width: 767.98px) {
+            .admin-sidebar {
+                display: none;
+            }
+            .mobile-adminbar {
+                display: flex;
+            }
+            .admin-user main.app-shell {
+                max-width: 960px;
+                width: 100%;
+                margin-left: auto;
+                margin-right: auto;
+                padding-left: 0.85rem;
+                padding-right: 0.85rem;
+            }
             .hero-panel {
                 padding: 1.5rem;
                 border-radius: 24px;
@@ -613,8 +839,6 @@
             .content-spacing {
                 padding-top: 1rem;
             }
-        }
-        @media (max-width: 767.98px) {
             body {
                 background:
                     linear-gradient(180deg, #fff8fc 0%, #ffeef7 100%);

@@ -3,216 +3,238 @@
 {% block title %}Dashboard | JCL{% endblock %}
 
 {% block content %}
-<section class="hero-panel mb-4">
-    <div class="hero-orb"></div>
-    <div class="row g-4 align-items-center">
-        <div class="col-lg-7">
-            <h1 class="display-6 mb-3">Control stock. Move fast.</h1>
-            <p class="mb-4 text-white-50">Live totals. Quick alerts.</p>
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{% url 'item_create' %}" class="btn btn-light">Add Item</a>
-                <a href="{% url 'branch_list' %}" class="btn btn-ghost">Manage Branches</a>
-                <a href="{% url 'user_management' %}" class="btn btn-ghost">Manage Users</a>
-            </div>
-        </div>
-        <div class="col-lg-5">
-            <div class="row g-3">
-                <div class="col-6">
-                    <div class="quick-stat">
-                        <div class="eyebrow">Branches</div>
-                        <div class="value">{{ branch_count }}</div>
-                        <div class="text-muted small">active locations</div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="quick-stat">
-                        <div class="eyebrow">Stock Units</div>
-                        <div class="value">{{ total_stock }}</div>
-                        <div class="text-muted small">available on hand</div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="quick-stat">
-                        <div class="eyebrow">Transactions</div>
-                        <div class="value">{{ transaction_count }}</div>
-                        <div class="text-muted small">completed sales</div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="quick-stat">
-                        <div class="eyebrow">Total Sales</div>
-                        <div class="value">Php {{ total_sales }}</div>
-                        <div class="text-muted small">recorded revenue</div>
+<div class="mb-5">
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%); border-radius: var(--radius-lg); padding: 3rem 2rem; color: white; position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(40px);"></div>
+                <div style="position: relative; z-index: 1;">
+                    <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">Welcome back</h1>
+                    <p style="font-size: 1.1rem; opacity: 0.95; margin-bottom: 2rem;">Your inventory dashboard is ready. Let's manage your stock efficiently.</p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{% url 'item_create' %}" class="btn btn-light" style="font-weight: 600;">
+                            <i class="bi bi-plus-circle me-2"></i>Add Item
+                        </a>
+                        <a href="{% url 'branch_list' %}" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); font-weight: 600;">
+                            <i class="bi bi-diagram-3 me-2"></i>Manage Branches
+                        </a>
+                        <a href="{% url 'user_management' %}" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); font-weight: 600;">
+                            <i class="bi bi-people me-2"></i>Manage Users
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</section>
+
+    <div class="row g-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100" style="border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: var(--radius-lg);">
+                <div class="card-body p-4">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Branches</span>
+                        <i class="bi bi-diagram-3" style="font-size: 1.5rem; color: var(--primary); opacity: 0.3;"></i>
+                    </div>
+                    <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--ink);">{{ branch_count }}</div>
+                    <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">active locations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100" style="border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: var(--radius-lg);">
+                <div class="card-body p-4">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Stock Units</span>
+                        <i class="bi bi-box" style="font-size: 1.5rem; color: var(--primary); opacity: 0.3;"></i>
+                    </div>
+                    <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--ink);">{{ total_stock }}</div>
+                    <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">available on hand</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100" style="border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: var(--radius-lg);">
+                <div class="card-body p-4">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Transactions</span>
+                        <i class="bi bi-receipt" style="font-size: 1.5rem; color: var(--primary); opacity: 0.3;"></i>
+                    </div>
+                    <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--ink);">{{ transaction_count }}</div>
+                    <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">completed sales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100" style="border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: var(--radius-lg);">
+                <div class="card-body p-4">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Sales</span>
+                        <i class="bi bi-cash-coin" style="font-size: 1.5rem; color: var(--primary); opacity: 0.3;"></i>
+                    </div>
+                    <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--ink);">Php {{ total_sales }}</div>
+                    <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">recorded revenue</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% if pending_users %}
-<div class="card mb-4">
-    <div class="card-body p-4">
-        <div class="panel-title">
-            <div>
-                <span class="section-label mb-2">Account Requests</span>
-                <h2 class="h4 mb-1">Pending Approval</h2>
-                <p class="text-muted mb-0">New signups need admin permission before they can use the system.</p>
-            </div>
-            <a href="{% url 'user_management' %}" class="btn btn-sm btn-outline-primary">Review Users</a>
-        </div>
-        <div class="list-group list-group-flush">
-            {% for pending_user in pending_users|slice:":3" %}
-                <div class="list-group-item px-0 py-3">
-                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-                        <div>
-                            <div class="fw-semibold">{{ pending_user.username }}</div>
-                            <small class="text-muted">{{ pending_user.email|default:"No email" }} | requested {{ pending_user.date_joined|date:"M d, Y h:i A" }}</small>
-                        </div>
-                        <span class="status-pill low">Waiting</span>
-                    </div>
+<div class="mb-4">
+    <div class="card" style="border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-radius: var(--radius-lg); border-left: 4px solid var(--primary);">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+                <div>
+                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;">Account Requests</div>
+                    <h2 class="h5 mb-1" style="color: var(--ink); font-weight: 700;">Pending Approval</h2>
+                    <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">New signups need admin permission before they can use the system.</p>
                 </div>
-            {% endfor %}
+                <a href="{% url 'user_management' %}" class="btn btn-sm" style="background: var(--primary); color: white; white-space: nowrap; font-weight: 600;">
+                    Review Users
+                </a>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for pending_user in pending_users|slice:":3" %}
+                    <div class="list-group-item" style="border: none; border-bottom: 1px solid var(--border); padding: 1rem 0;">
+                        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                            <div>
+                                <div style="font-weight: 600; color: var(--ink);">{{ pending_user.username }}</div>
+                                <small style="color: var(--muted);">{{ pending_user.email|default:"No email" }} • {{ pending_user.date_joined|date:"M d, Y" }}</small>
+                            </div>
+                            <span style="background: rgba(240, 77, 148, 0.1); color: var(--primary); padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">Waiting</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>
 {% endif %}
 
-<div class="card mb-4">
-    <div class="card-body p-4">
-        <div class="panel-title">
-            <div>
-                <span class="section-label mb-2">Admin Only</span>
-                <h2 class="h4 mb-1">Branches and Sales</h2>
-                <p class="text-muted mb-0">All branch totals in one view.</p>
+<div class="mb-4">
+    <div class="card" style="border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-radius: var(--radius-lg);">
+        <div class="card-body p-4">
+            <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem; margin-bottom: 2rem;">
+                <div>
+                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;">Branch Overview</div>
+                    <h2 class="h5 mb-1" style="color: var(--ink); font-weight: 700;">Branches and Sales</h2>
+                    <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">All branch totals in one view.</p>
+                </div>
+                <span style="background: var(--primary); color: white; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; white-space: nowrap;">{{ total_items }} item{{ total_items|pluralize }}</span>
             </div>
-            <span class="metric-chip">{{ total_items }} item{{ total_items|pluralize }}</span>
-        </div>
-        <div class="table-responsive">
-            <table class="table align-middle">
-                <thead>
-                    <tr>
-                        <th>Branch</th>
-                        <th>Items</th>
-                        <th>Transactions</th>
-                        <th>Units Sold</th>
-                        <th>Total Sales</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for branch in branch_sales %}
-                        <tr>
-                            <td>
-                                <div class="fw-semibold">
-                                    <a href="{% url 'branch_detail' branch.pk %}" class="text-decoration-none">
-                                        {{ branch.name }}
+            <div class="table-responsive">
+                <table class="table align-middle" style="font-size: 0.95rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border);">
+                            <th style="font-weight: 700; color: var(--ink);">Branch</th>
+                            <th style="font-weight: 700; color: var(--ink);">Items</th>
+                            <th style="font-weight: 700; color: var(--ink);">Transactions</th>
+                            <th style="font-weight: 700; color: var(--ink);">Units Sold</th>
+                            <th style="font-weight: 700; color: var(--ink);">Total Sales</th>
+                            <th style="font-weight: 700; color: var(--ink);">Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for branch in branch_sales %}
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td>
+                                    <div style="font-weight: 600; color: var(--ink);">
+                                        <a href="{% url 'branch_detail' branch.pk %}" style="color: var(--primary); text-decoration: none;">
+                                            {{ branch.name }}
+                                        </a>
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--muted);">{{ branch.address|default:"No address set" }}</div>
+                                </td>
+                                <td><span style="color: var(--ink); font-family: 'IBM Plex Mono', monospace;">{{ branch.item_count }}</span></td>
+                                <td><span style="color: var(--ink); font-family: 'IBM Plex Mono', monospace;">{{ branch.transaction_count }}</span></td>
+                                <td><span style="color: var(--ink); font-family: 'IBM Plex Mono', monospace;">{{ branch.units_sold }}</span></td>
+                                <td style="font-weight: 600; color: var(--ink);">Php {{ branch.total_sales|default:"0.00" }}</td>
+                                <td>
+                                    {% if branch.is_active %}
+                                        <span style="background: rgba(76, 175, 80, 0.15); color: #2e7d32; padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">Active</span>
+                                    {% else %}
+                                        <span style="background: rgba(244, 67, 54, 0.15); color: #c62828; padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'branch_detail' branch.pk %}" class="btn btn-sm" style="background: var(--primary); color: white; border: none; font-weight: 600;">
+                                        View
                                     </a>
-                                </div>
-                                <div class="small text-muted">{{ branch.address|default:"No address set" }}</div>
-                            </td>
-                            <td><span class="mono">{{ branch.item_count }}</span></td>
-                            <td><span class="mono">{{ branch.transaction_count }}</span></td>
-                            <td><span class="mono">{{ branch.units_sold }}</span></td>
-                            <td class="fw-semibold">Php {{ branch.total_sales|default:"0.00" }}</td>
-                            <td>
-                                {% if branch.is_active %}
-                                    <span class="status-pill good">Active</span>
-                                {% else %}
-                                    <span class="status-pill low">Inactive</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-end">
-                                <div class="action-group">
-                                    <a href="{% url 'branch_detail' branch.pk %}" class="btn btn-sm btn-outline-primary">View Info</a>
-                                </div>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-4">No branches found.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4" style="color: var(--muted);">No branches found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="row g-4">
     <div class="col-lg-6">
-        <div class="card h-100">
+        <div class="card h-100" style="border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-radius: var(--radius-lg); border-left: 4px solid #ff6b6b;">
             <div class="card-body p-4">
-                <div class="panel-title">
+                <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem; margin-bottom: 1.5rem;">
                     <div>
-                        <span class="section-label mb-2">Alerts</span>
-                        <h2 class="h4 mb-1">Low Stock</h2>
-                        <p class="text-muted mb-0">Below 5 units.</p>
+                        <div style="font-size: 0.85rem; font-weight: 600; color: #ff6b6b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;">Inventory Alerts</div>
+                        <h2 class="h5 mb-1" style="color: var(--ink); font-weight: 700;">Low Stock</h2>
+                        <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">Below 5 units.</p>
                     </div>
-                    <span class="metric-chip">{{ low_stock_count }} flagged</span>
+                    <span style="background: rgba(255, 107, 107, 0.15); color: #ff6b6b; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;">{{ low_stock_count }} flagged</span>
                 </div>
                 {% if low_stock_items %}
-                    <div class="table-responsive">
-                        <table class="table align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Stock</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in low_stock_items %}
-                                    <tr>
-                                        <td>
-                                            <div class="fw-semibold">{{ item.name }}</div>
-                                            <div class="small text-muted">Needs replenishment soon</div>
-                                        </td>
-                                        <td><span class="status-pill low">{{ item.quantity }} left</span></td>
-                                        <td class="text-end">
-                                            <a href="{% url 'item_update' item.pk %}" class="btn btn-sm btn-outline-primary">Restock</a>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="list-group list-group-flush">
+                        {% for item in low_stock_items %}
+                            <div class="list-group-item" style="border: none; border-bottom: 1px solid var(--border); padding: 1rem 0; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--ink);">{{ item.name }}</div>
+                                    <div style="font-size: 0.85rem; color: var(--muted);">Needs replenishment soon</div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <span style="background: rgba(255, 107, 107, 0.15); color: #ff6b6b; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;">{{ item.quantity }} left</span>
+                                    <a href="{% url 'item_update' item.pk %}" class="btn btn-sm" style="background: var(--primary); color: white; border: none; font-weight: 600; white-space: nowrap;">Restock</a>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
                 {% else %}
-                    <p class="text-muted mb-0">All items are at healthy stock levels.</p>
+                    <p style="margin: 0; color: var(--muted); font-style: italic;">All items are at healthy stock levels. 👍</p>
                 {% endif %}
             </div>
         </div>
     </div>
     <div class="col-lg-6">
-        <div class="card h-100">
+        <div class="card h-100" style="border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-radius: var(--radius-lg); border-left: 4px solid #4dabf7;">
             <div class="card-body p-4">
-                <div class="panel-title">
+                <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem; margin-bottom: 1.5rem;">
                     <div>
-                        <span class="section-label mb-2">Cash Flow</span>
-                        <h2 class="h4 mb-1">Recent Sales</h2>
-                        <p class="text-muted mb-0">Latest receipts.</p>
+                        <div style="font-size: 0.85rem; font-weight: 600; color: #4dabf7; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;">Cash Flow</div>
+                        <h2 class="h5 mb-1" style="color: var(--ink); font-weight: 700;">Recent Sales</h2>
+                        <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">Latest receipts.</p>
                     </div>
                 </div>
                 {% if recent_transactions %}
                     <div class="list-group list-group-flush">
                         {% for txn in recent_transactions %}
-                            <a href="{% url 'receipt' txn.pk %}" class="list-group-item list-group-item-action px-0 py-3">
-                                <div class="d-flex justify-content-between align-items-center gap-3">
-                                    <div>
-                                        <div class="fw-semibold">Transaction #{{ txn.pk }}</div>
-                                        <small class="text-muted">{{ txn.branch.name }} | {{ txn.date|date:"M d, Y h:i A" }}</small>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="fw-semibold">Php {{ txn.total_amount }}</div>
-                                        <small class="text-muted mono">{{ txn.transaction_items.count }} line(s)</small>
-                                    </div>
+                            <a href="{% url 'receipt' txn.pk %}" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); text-decoration: none; color: var(--ink); transition: all 0.2s ease;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--ink);">Transaction #{{ txn.pk }}</div>
+                                    <small style="color: var(--muted);">{{ txn.branch.name }} • {{ txn.date|date:"M d, Y g:i A" }}</small>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: 700; color: var(--primary);">Php {{ txn.total_amount }}</div>
+                                    <small style="color: var(--muted); font-family: 'IBM Plex Mono', monospace;">{{ txn.transaction_items.count }} line(s)</small>
                                 </div>
                             </a>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p class="text-muted mb-0">No transactions yet.</p>
+                    <p style="margin: 0; color: var(--muted); font-style: italic;">No transactions yet.</p>
                 {% endif %}
             </div>
         </div>

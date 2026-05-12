@@ -34,10 +34,7 @@ def _is_admin_user(user):
 
 
 def _admin_cashier_redirect(request):
-    """Keep staff/admin users out of cashier-only cart screens."""
-    if request.user.is_staff:
-        messages.info(request, "Cart access is for user accounts only.")
-        return redirect("dashboard")
+    """Return a redirect when cart access should be blocked."""
     return None
 
 
